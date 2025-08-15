@@ -18,6 +18,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, notety');
+    // Root template now only contains the router outlet; ensure it exists
+    expect(compiled.querySelector('router-outlet')).toBeTruthy();
   });
 });

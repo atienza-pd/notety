@@ -1,0 +1,21 @@
+<section class="notes">
+  <h2>{{ title() }}</h2>
+
+  <form
+    (submit)="$event.preventDefault(); addNote(input.value); input.value = ''"
+  >
+    <input #input type="text" placeholder="Add a note..." />
+    <button type="submit">Add</button>
+  </form>
+
+  <ul>
+    @for (n of notes(); track $index; let i = $index) {
+    <li>
+      <span>{{ n }}</span>
+      <button type="button" (click)="removeNote(i)" aria-label="Remove">
+        ✕
+      </button>
+    </li>
+    }
+  </ul>
+</section>
