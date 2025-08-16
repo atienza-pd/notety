@@ -1,4 +1,11 @@
-import { Component, OnDestroy, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  OnDestroy,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { NotesService } from './notes.service';
 import { NoteList } from '../models/note.model';
@@ -20,6 +27,8 @@ export class NotesComponent implements OnDestroy {
   private readonly qp = toSignal(this.route.queryParamMap, {
     initialValue: this.route.snapshot.queryParamMap,
   });
+  // Tracks current responsive column count to compute vertical tab order
+  readonly columnsCount = signal<number>(this.getColumnsCount());
 
   // dialog state
   readonly viewingId = signal<string | null>(null);
@@ -75,5 +84,35 @@ export class NotesComponent implements OnDestroy {
     if (this.alertTimeout !== null) {
       clearTimeout(this.alertTimeout);
     }
+  }
+
+  // Compute tabindex in column-major order so keyboard tabs vertically
+  getTabIndex(index: number, kind: 'view' | 'remove'): number {
+    const C = this.columnsCount();
+    const list = this.notes();
+    const N = list.length;
+    if (C <= 1 || N <= 1) {
+      // Single column or single item: natural order
+      return index + 1 + (kind === 'remove' ? N : 0);
+    }
+    const rows = Math.ceil(N / C);
+    const row = Math.floor(index / C);
+    const col = index % C;
+    const base = col * rows + row + 1; // 1-based tabindex sequence
+    return kind === 'view' ? base : base + N;
+  }
+
+  // Update columnsCount on viewport resize to match Tailwind breakpoints
+  @HostListener('window:resize')
+  onResize(): void {
+    this.columnsCount.set(this.getColumnsCount());
+  }
+
+  private getColumnsCount(): number {
+    const w = window.innerWidth;
+    // Tailwind default breakpoints: sm: 640px, lg: 1024px
+    if (w >= 1024) return 3;
+    if (w >= 640) return 2;
+    return 1;
   }
 }
