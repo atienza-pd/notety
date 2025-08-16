@@ -67,11 +67,11 @@ export class NotesService {
     },
   ]);
 
-  add(note: Note) {
+  add(note: Note): void {
     this.notes.update((list) => [note, ...list]);
   }
 
-  removeAt(index: number) {
+  removeAt(index: number): void {
     this.notes.update((list) => list.filter((_, i) => i !== index));
   }
 }

@@ -21,7 +21,7 @@ export class AddNoteComponent {
     private readonly router: Router
   ) {}
 
-  async onSave(value: { title?: string; content: string }) {
+  async onSave(value: { title?: string; content: string }): Promise<void> {
     this.notes.add({
       id: createGuid(),
       title: value.title,
@@ -31,7 +31,7 @@ export class AddNoteComponent {
     await this.router.navigate(['/', 'notes']);
   }
 
-  async onCancel() {
+  async onCancel(): Promise<void> {
     await this.router.navigate(['/', 'notes']);
   }
 }
