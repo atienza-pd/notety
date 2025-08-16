@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NotesService } from './notes.service';
 import { NoteList } from '../models/note.model';
@@ -12,7 +12,7 @@ import { NoteList } from '../models/note.model';
 })
 export class NotesComponent {
   readonly title = signal('Notes');
-  constructor(private readonly notesSvc: NotesService) {}
+  private readonly notesSvc = inject(NotesService);
 
   notes(): NoteList {
     return this.notesSvc.notes();

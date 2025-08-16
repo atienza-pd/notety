@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { NoteFormComponent } from '../../shared/note-form/note-form.component';
 import { NotesService } from './notes.service';
@@ -16,10 +16,8 @@ import { createGuid } from '../../shared/utils/guid';
   `,
 })
 export class AddNoteComponent {
-  constructor(
-    private readonly notes: NotesService,
-    private readonly router: Router
-  ) {}
+  private readonly notes = inject(NotesService);
+  private readonly router = inject(Router);
 
   async onSave(value: { title?: string; content: string }): Promise<void> {
     this.notes.add({
