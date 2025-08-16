@@ -28,7 +28,7 @@ export class NotesComponent implements OnDestroy {
   );
   readonly isDialogOpen = signal(false);
   readonly alertMessage = signal<string | null>(null);
-  private alertTimeout: any;
+  private alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
   private readonly syncQuery = effect(() => {
     const id = this.qp().get('view');
@@ -44,7 +44,7 @@ export class NotesComponent implements OnDestroy {
         this.viewingNote.set(null);
         this.isDialogOpen.set(false);
         this.alertMessage.set('No note found for this ID.');
-        if (this.alertTimeout) clearTimeout(this.alertTimeout);
+        if (this.alertTimeout !== null) clearTimeout(this.alertTimeout);
         this.alertTimeout = setTimeout(() => this.alertMessage.set(null), 5000);
         queueMicrotask(() => {
           this.router.navigate(['/', 'notes'], { queryParams: {} });
@@ -70,6 +70,8 @@ export class NotesComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.alertTimeout) clearTimeout(this.alertTimeout);
+    if (this.alertTimeout !== null) {
+      clearTimeout(this.alertTimeout);
+    }
   }
 }
