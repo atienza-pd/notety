@@ -44,7 +44,9 @@ export class NotesComponent implements OnDestroy {
         this.viewingNote.set(null);
         this.isDialogOpen.set(false);
         this.alertMessage.set('No note found for this ID.');
-        if (this.alertTimeout !== null) clearTimeout(this.alertTimeout);
+        if (this.alertTimeout !== null) {
+          clearTimeout(this.alertTimeout);
+        }
         this.alertTimeout = setTimeout(() => this.alertMessage.set(null), 5000);
         queueMicrotask(() => {
           this.router.navigate(['/', 'notes'], { queryParams: {} });
