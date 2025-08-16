@@ -1,8 +1,11 @@
 export function createGuid(): string {
-  const uuidFn = (globalThis as { crypto?: { randomUUID?: unknown } }).crypto
-    ?.randomUUID;
-  if (typeof uuidFn === 'function') {
-    return (uuidFn as () => string)();
+  type CryptoLike = { randomUUID?: () => string };
+  const cryptoLike: CryptoLike | undefined = (
+    globalThis as { crypto?: CryptoLike }
+  ).crypto;
+  if (cryptoLike?.randomUUID) {
+    // Bind/call to preserve the original receiver and avoid "Illegal invocation" errors
+    return cryptoLike.randomUUID.call(cryptoLike);
   }
   // Fallback RFC4122 v4 (not cryptographically strong)
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
