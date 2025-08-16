@@ -1,6 +1,9 @@
 export function createGuid(): string {
-  const uuid = (globalThis as any)?.crypto?.randomUUID?.();
-  if (uuid) return uuid as string;
+  const uuidFn = (globalThis as { crypto?: { randomUUID?: unknown } }).crypto
+    ?.randomUUID;
+  if (typeof uuidFn === 'function') {
+    return (uuidFn as () => string)();
+  }
   // Fallback RFC4122 v4 (not cryptographically strong)
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
