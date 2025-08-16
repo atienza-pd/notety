@@ -7,4 +7,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/notes/notes.component').then((m) => m.NotesComponent),
   },
+  {
+    path: 'notes/new',
+    loadComponent: () =>
+      import('./features/notes/add-note.component').then(
+        (m) => m.AddNoteComponent
+      ),
+  },
 ];
