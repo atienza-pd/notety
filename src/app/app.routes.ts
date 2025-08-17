@@ -14,4 +14,11 @@ export const routes: Routes = [
         (m) => m.AddNoteComponent
       ),
   },
+  {
+    path: 'notes/:id',
+    loadComponent: () =>
+      import('./features/notes/edit-note/edit-note.component').then(
+        (m) => m.EditNoteComponent
+      ),
+  },
 ];

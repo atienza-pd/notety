@@ -1,11 +1,33 @@
 <div class="bg-white shadow-xl rounded-lg p-6 w-full max-w-2xl">
-  <div class="mb-4">
-    <h2 class="text-lg font-semibold text-gray-900">
-      {{ note()?.title || "Untitled" }}
-    </h2>
-    <p class="mt-1 text-sm text-gray-500">
-      Updated {{ note()?.updatedAt || note()?.createdAt | date : "medium" }}
-    </p>
+  <div class="mb-4 flex items-start justify-between">
+    <div>
+      <h2 class="text-lg font-semibold text-gray-900">
+        {{ note()?.title || "Untitled" }}
+      </h2>
+      <p class="mt-1 text-sm text-gray-500">
+        Updated {{ note()?.updatedAt || note()?.createdAt | date : "medium" }}
+      </p>
+    </div>
+    @if (note()) {
+    <a
+      class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:text-indigo-600 hover:bg-indigo-50"
+      [routerLink]="['/notes', note()!.id]"
+      aria-label="Edit"
+      title="Edit note"
+    >
+      <!-- Pen icon -->
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        class="h-5 w-5"
+      >
+        <path
+          d="M16.862 3.487a1.5 1.5 0 0 1 2.121 0l1.53 1.53a1.5 1.5 0 0 1 0 2.121l-9.9 9.9a1.5 1.5 0 0 1-.53.353l-4.24 1.414a.75.75 0 0 1-.949-.949l1.414-4.24a1.5 1.5 0 0 1 .353-.53l9.9-9.9Zm-2.828 2.828-9.193 9.193a3 3 0 0 0-.707 1.06L3.5 20.5l3.932-1.634a3 3 0 0 0 1.06-.707l9.193-9.193-3.651-3.651Z"
+        />
+      </svg>
+    </a>
+    }
   </div>
   <div class="prose prose-sm max-w-none text-gray-800 whitespace-pre-line">
     {{ note()?.content }}
