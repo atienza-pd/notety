@@ -10,5 +10,7 @@ import { NavbarComponent } from './shared/navbar/navbar.component';
   styleUrl: './app.css',
 })
 export class App {
-  protected readonly title = signal('Notety');
+  protected readonly title = signal(
+    'Notety - A small note taking app that works!'
+  );
 }

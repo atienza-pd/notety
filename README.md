@@ -58,6 +58,40 @@ Unit tests:
 ng test
 ```
 
+## Docker (WSL) local deployment
+
+This repository includes a Dockerfile and docker-compose.yml to build the Angular app and serve it with Nginx for production-like local testing in WSL.
+
+### Prerequisites
+
+- Docker Desktop for Windows with WSL 2 backend enabled (Settings > General > Use the WSL 2 based engine) and integration turned on for your WSL distro (Settings > Resources > WSL Integration).
+
+### Build and run
+
+1. Build the image and start the container:
+
+   - PowerShell (from project root):
+
+     ```powershell
+     docker compose build
+     docker compose up -d
+     ```
+
+   - WSL shell (from /mnt/c/dev/notety):
+
+     ```bash
+     docker compose build
+     docker compose up -d
+     ```
+
+2. Open http://localhost:8080
+
+### Notes
+
+- The Angular app is built in a Node image and served by Nginx. SPA routing is handled by Nginx via `try_files` to `index.html`.
+- Modify `nginx.conf` if you need custom headers or caching rules.
+- To rebuild after changes: `docker compose build --no-cache && docker compose up -d`.
+
 ## Roadmap ideas
 
 - Local storage or backend persistence
