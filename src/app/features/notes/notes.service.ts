@@ -7,17 +7,17 @@ export class NotesService {
 
   readonly notes = signal<NoteList>(this.loadFromStorageOrSeed());
 
-  private readonly persistEffect = effect(() => {
-    // Persist any changes to the notes signal into localStorage
+  // No injector needed: service is providedIn 'root' (app-lifetime); effect cleans up its debounce timer
+  private readonly persistEffect = effect((onCleanup) => {
     const current = this.notes();
-    this.saveToStorage(current);
+    const handle = setTimeout(() => this.saveToStorage(current), 150);
+    onCleanup(() => clearTimeout(handle));
   });
 
   private loadFromStorageOrSeed(): NoteList {
     try {
       const raw = localStorage.getItem(this.storageKey);
       if (!raw) {
-        // First run: start with an empty list
         return [];
       }
       const parsed = JSON.parse(raw) as Array<
@@ -32,7 +32,6 @@ export class NotesService {
         updatedAt: n.updatedAt ? new Date(n.updatedAt) : undefined,
       }));
     } catch {
-      // On any error, fall back to an empty list to keep the app usable
       return [];
     }
   }
@@ -45,8 +44,9 @@ export class NotesService {
         updatedAt: n.updatedAt ? n.updatedAt.toISOString() : undefined,
       }));
       localStorage.setItem(this.storageKey, JSON.stringify(serializable));
-    } catch {
+    } catch (err) {
       // ignore persistence errors
+      console.error('Failed to persist notes to localStorage:', err);
     }
   }
 
