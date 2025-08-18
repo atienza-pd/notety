@@ -28,7 +28,11 @@ export class EditNoteComponent {
 
   async onSave(value: { title?: string; content: string }): Promise<void> {
     const id = this.id();
-    if (!id) return;
+
+    if (!id) {
+      return;
+    }
+
     this.notes.update(id, {
       title: value.title,
       content: value.content,
