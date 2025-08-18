@@ -9,6 +9,11 @@ describe('NotesComponent', () => {
     }).compileComponents();
   });
 
+  afterEach(() => {
+    // Ensure tests are isolated
+    localStorage.removeItem('notety.notes');
+  });
+
   it('should create and render title', () => {
     const fixture = TestBed.createComponent(NotesComponent);
     const component = fixture.componentInstance;
@@ -20,6 +25,19 @@ describe('NotesComponent', () => {
   });
 
   it('removes a note when Remove is clicked', () => {
+    // Seed localStorage with one note before component is created
+    localStorage.setItem(
+      'notety.notes',
+      JSON.stringify([
+        {
+          id: 'test-1',
+          title: 'Test Note',
+          content: 'Hello world',
+          createdAt: new Date().toISOString(),
+        },
+      ])
+    );
+
     const fixture = TestBed.createComponent(NotesComponent);
     fixture.detectChanges();
 
