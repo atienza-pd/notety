@@ -77,4 +77,18 @@ export class NotesService {
   findById(id: string): Note | undefined {
     return this.notes().find((n) => n.id === id);
   }
+
+  update(id: string, changes: Partial<Omit<Note, 'id' | 'createdAt'>>): void {
+    this.notes.update((list) =>
+      list.map((n) =>
+        n.id === id
+          ? {
+              ...n,
+              ...changes,
+              updatedAt: new Date(),
+            }
+          : n
+      )
+    );
+  }
 }
