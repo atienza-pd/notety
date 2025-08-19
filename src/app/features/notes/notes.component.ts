@@ -1,9 +1,17 @@
-import { Component, OnDestroy, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { NotesService } from './notes.service';
 import { NoteList } from '../models/note.model';
 import { NoteDetailsComponent } from './note-details.component';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { SearchService } from '../../shared/services/search.service';
 
 @Component({
   selector: 'app-notes',
@@ -19,6 +27,23 @@ export class NotesComponent implements OnDestroy {
   private readonly router = inject(Router);
   private readonly qp = toSignal(this.route.queryParamMap, {
     initialValue: this.route.snapshot.queryParamMap,
+  });
+  private readonly searchSvc = inject(SearchService);
+  readonly searchTerm = this.searchSvc.debouncedTerm;
+
+  readonly filteredNotes = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    const list = this.notesSvc.notes();
+
+    if (!term) {
+      return list;
+    }
+
+    return list.filter(
+      (n) =>
+        (n.title ?? '').toLowerCase().includes(term) ||
+        n.content.toLowerCase().includes(term)
+    );
   });
 
   // dialog state
@@ -54,10 +79,6 @@ export class NotesComponent implements OnDestroy {
       }
     }
   });
-
-  notes(): NoteList {
-    return this.notesSvc.notes();
-  }
 
   removeNote(index: number): void {
     this.notesSvc.removeAt(index);

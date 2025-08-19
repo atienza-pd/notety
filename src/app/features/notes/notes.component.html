@@ -10,7 +10,7 @@
     </a>
   </div>
   <div class="grid grid-cols-3 gap-4">
-    @for (n of notes(); track $index; let i = $index) {
+    @for (n of filteredNotes(); track $index; let i = $index) {
     <article
       class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col"
     >
