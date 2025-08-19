@@ -80,11 +80,6 @@ export class NotesComponent implements OnDestroy {
     }
   });
 
-  notes(): NoteList {
-    // keep existing API but route to filtered list so other code doesn't change
-    return this.filteredNotes();
-  }
-
   removeNote(index: number): void {
     this.notesSvc.removeAt(index);
   }
