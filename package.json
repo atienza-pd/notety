@@ -8,6 +8,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "serve:dist": "npx http-server dist/notety/browser -p 8080 -c-1",
     "lint": "eslint \"src/**/*.ts\""
   },
   "prettier": {
@@ -27,6 +28,7 @@
     "@angular/core": "^20.1.0",
     "@angular/forms": "^20.1.0",
     "@angular/platform-browser": "^20.1.0",
+    "@angular/service-worker": "^20.1.0",
     "@angular/router": "^20.1.0",
     "@tailwindcss/postcss": "^4.1.12",
     "postcss": "^8.5.6",

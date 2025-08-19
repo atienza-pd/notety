@@ -1,3 +1,34 @@
+# Notety
+
+A small note-taking app built with Angular.
+
+## Progressive Web App (PWA)
+
+This app is now a PWA:
+
+- Offline-ready via Angular Service Worker
+- Installable on desktop and mobile (Add to Home Screen)
+- Uses localStorage for data, so notes persist offline
+
+How to try it locally (production build):
+
+1. Build the app.
+2. Serve the `dist` output over HTTP (service workers require http/https).
+
+Commands:
+
+```powershell
+npm run build
+npm run serve:dist
+```
+
+Then open http://localhost:8080 and you should see the install prompt in supported browsers.
+
+Notes:
+
+- Update the app icons under `public/icons` for your brand.
+- Service worker registers in production only; `ng serve` disables it by default.
+
 # Notety — Simple Notes
 
 Notety is a minimal notes app built with Angular. It lets you create, view, edit, and remove notes locally (no backend). Notes are persisted in your browser’s localStorage.
