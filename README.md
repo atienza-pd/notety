@@ -8,6 +8,7 @@ Notety is a minimal notes app built with Angular. It lets you create, view, edit
 - View note details in a modal (shareable via `?view=<id>` query param)
 - Edit existing notes on a dedicated page
 - Remove notes from the list
+- Search notes (title and content) using the navbar search input with a 300ms debounce; hidden on the add and edit page
 - Local persistence via `localStorage`
 - Accessible controls (aria-labels)
 - Modern Angular patterns: standalone components, signals, new control flow, reactive forms
@@ -36,6 +37,9 @@ Notety is a minimal notes app built with Angular. It lets you create, view, edit
 - App shell and routing:
   - [`App`](src/app/app.ts)
   - [`routes`](src/app/app.routes.ts)
+- Search:
+  - Navbar UI: [`shared/navbar/navbar.component.html`](src/app/shared/navbar/navbar.component.html) and [`shared/navbar/navbar.component.ts`](src/app/shared/navbar/navbar.component.ts)
+  - Debounced state: [`shared/services/search.service.ts`](src/app/shared/services/search.service.ts)
 
 ## How it works
 
@@ -44,6 +48,17 @@ Notety is a minimal notes app built with Angular. It lets you create, view, edit
 - View: click “View” on a card to open the details modal (URL gains `?view=<id>`).
 - Edit: open `/notes/:id`, update fields, save.
 - Remove: click “Remove” on a card.
+- Search: type in the navbar search on `/notes` to filter by title/content; results update after a short delay. The search is hidden on `/notes/:id` (edit page).
+
+## Search
+
+- Where: Top-right of the navbar on the notes list page (`/notes`). It’s intentionally hidden on the add (`/notes/new`) and edit page (`/notes/:id`).
+- What it does: Filters the list by title and content. It also works when viewing a note via modal (`?view=<id>`), because filtering happens in the list component.
+- Debounce: 300ms to avoid filtering on every keystroke.
+- Implementation:
+  - The input writes to `SearchService.term`; a debounced mirror `SearchService.debouncedTerm` updates after 300ms.
+  - `NotesComponent` uses the debounced value to compute a filtered list.
+- Tuning: Adjust the debounce in [`shared/services/search.service.ts`](src/app/shared/services/search.service.ts) (`debounceMs`).
 
 ## Getting started
 
@@ -112,7 +127,7 @@ Notes:
 ## Roadmap ideas
 
 - Backend persistence
-- Search, tags, and filters
+- Tags and filters
 - Reordering and drag & drop
 - Markdown support
 - Offline support (PWA)
