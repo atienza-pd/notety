@@ -7,7 +7,8 @@ services:
     image: notety:latest
     container_name: notety
     ports:
-      - "8080:80"
+  - "8080:80"
+  - "8443:443"
     environment:
       # Example placeholder for future environment-based config
       - NODE_ENV=production
@@ -15,3 +16,6 @@ services:
     # volumes:
     #   - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     #   - ./dist/notety:/usr/share/nginx/html:ro
+    volumes:
+      # Mount your own certs for LAN: server.crt and server.key
+      - ./certs:/etc/nginx/certs:ro
