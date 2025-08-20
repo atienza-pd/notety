@@ -174,20 +174,31 @@ Tailwind CSS v4 via PostCSS:
 
 ## Docker (WSL) local deployment
 
-This repo includes a Dockerfile and docker-compose.yml to build the Angular app and serve it with Nginx.
+This repo includes a Dockerfile and docker-compose.yml to build the Angular app and serve it with NGINX. HTTPS is enabled for PWA testing.
 
 Build and run:
 
-```bash
+```powershell
 docker compose build
 docker compose up -d
 ```
 
-Open http://localhost:8080
+Open:
+
+- HTTP:  http://localhost:8080 (redirects to HTTPS)
+- HTTPS: https://localhost:8443
+
+Certificates:
+
+- If you don’t mount certs, the container generates a self-signed cert for localhost. Browsers may warn; for LAN devices use trusted certs.
+- To use your own certs (mkcert or real):
+  - Create `./certs/server.crt` and `./certs/server.key` on the host.
+  - docker-compose mounts `./certs` into `/etc/nginx/certs` (read-only).
+  - For LAN: include the IP/hostname in the cert Subject Alternative Names.
 
 Notes:
 
-- SPA routing is handled by Nginx (`try_files` to `index.html`).
+- SPA routing handled by NGINX (`try_files` to `index.html`).
 - Rebuild after changes: `docker compose build --no-cache && docker compose up -d`
 - WSL tips: see [docs/wsl-docker-fixes.md](docs/wsl-docker-fixes.md)
 
