@@ -1,5 +1,5 @@
 param(
-  [string]$Hosts = "localhost,127.0.0.1"
+    [string]$Hosts = "localhost,127.0.0.1"
 )
 
 $ErrorActionPreference = 'Stop'
@@ -7,20 +7,20 @@ $ErrorActionPreference = 'Stop'
 $certsDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $caDir = Join-Path $certsDir 'ca'
 $trustDir = Join-Path $certsDir 'trust'
-New-Item -ItemType Directory -Force -Path $caDir,$trustDir | Out-Null
+New-Item -ItemType Directory -Force -Path $caDir, $trustDir | Out-Null
 
 # Generate local CA if missing
 $caKey = Join-Path $caDir 'localCA.key'
 $caCrt = Join-Path $caDir 'localCA.crt'
 if (-not (Test-Path $caKey -PathType Leaf) -or -not (Test-Path $caCrt -PathType Leaf)) {
-  Write-Host 'Generating local CA...'
-  openssl genrsa -out $caKey 2048 | Out-Null
-  openssl req -x509 -new -nodes -key $caKey -sha256 -days 3650 -out $caCrt -subj "/CN=Notety Local CA" | Out-Null
+    Write-Host 'Generating local CA...'
+    openssl genrsa -out $caKey 2048 | Out-Null
+    openssl req -x509 -new -nodes -key $caKey -sha256 -days 3650 -out $caCrt -subj "/CN=Notety Local CA" | Out-Null
 }
 
 # Create SAN config for the server cert
 $san = ($Hosts -split ',') | ForEach-Object {
-  if ($_ -match '^[0-9.]+$') { "IP = $_" } else { "DNS = $_" }
+    if ($_ -match '^[0-9.]+$') { "IP = $_" } else { "DNS = $_" }
 } | Out-String
 
 $tmp = New-TemporaryFile
@@ -52,6 +52,6 @@ openssl x509 -req -in $serverCsr -CA $caCrt -CAkey $caKey -CAcreateserial -out $
 # Export CA to trust folder
 Copy-Item $caCrt (Join-Path $trustDir 'notety-local-ca.crt') -Force
 
-Remove-Item $serverCsr,$tmp -Force
+Remove-Item $serverCsr, $tmp -Force
 
 Write-Host "Done. Created:`n  $serverCrt`n  $serverKey`nCA to trust on clients:`n  $(Join-Path $trustDir 'notety-local-ca.crt')"
