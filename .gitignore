@@ -1,3 +1,19 @@
+# Certs (keep private material out of git)
+certs/*.key
+certs/*.csr
+certs/*.srl
+certs/ca/
+certs/trust/
+
+# Node/Angular
+node_modules/
+dist/
+
+# OS/Editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
 # See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
 # Compiled output

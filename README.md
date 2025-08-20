@@ -185,16 +185,30 @@ docker compose up -d
 
 Open:
 
-- HTTP:  http://localhost:8080 (redirects to HTTPS)
+- HTTP: http://localhost:8080 (redirects to HTTPS)
 - HTTPS: https://localhost:8443
 
 Certificates:
 
 - If you don’t mount certs, the container generates a self-signed cert for localhost. Browsers may warn; for LAN devices use trusted certs.
-- To use your own certs (mkcert or real):
+- To use your own certs (mkcert or CA-backed):
   - Create `./certs/server.crt` and `./certs/server.key` on the host.
-  - docker-compose mounts `./certs` into `/etc/nginx/certs` (read-only).
-  - For LAN: include the IP/hostname in the cert Subject Alternative Names.
+  - For LAN: include the IP/hostname in Subject Alternative Names (SANs).
+  - Uncomment the certs volume in `docker-compose.yml` to mount `./certs` into `/etc/nginx/certs`.
+
+Generate local CA + server certs for client trust:
+
+- Windows (PowerShell):
+
+  - Run: `./certs/generate-certs.ps1 -Hosts "localhost,127.0.0.1,192.168.1.50,notety.local"`
+  - Trust the CA at `certs/trust/notety-local-ca.crt` on client machines
+
+- macOS/Linux (Bash):
+
+  - Run: `./certs/generate-certs.sh "localhost,127.0.0.1,192.168.1.50,notety.local"`
+  - Trust the CA at `certs/trust/notety-local-ca.crt` on client machines
+
+Then uncomment the certs volume and restart compose.
 
 Notes:
 
