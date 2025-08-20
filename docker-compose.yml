@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   notety:
     build:
@@ -7,8 +6,8 @@ services:
     image: notety:latest
     container_name: notety
     ports:
-  - "8080:80"
-  - "8443:443"
+      - "8080:80"
+      - "8443:443"
     environment:
       # Example placeholder for future environment-based config
       - NODE_ENV=production
