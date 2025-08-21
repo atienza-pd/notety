@@ -1,1 +1,11 @@
-
+/* Optional: thin scrollbar for overflowing content area */
+.max-h-\[240px\]::-webkit-scrollbar {
+  width: 8px;
+}
+.max-h-\[240px\]::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.8); /* gray-400 */
+  border-radius: 4px;
+}
+.max-h-\[240px\]::-webkit-scrollbar-track {
+  background-color: rgba(229, 231, 235, 0.6); /* gray-200 */
+}

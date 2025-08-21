@@ -12,6 +12,8 @@ Notety is a minimal notes app built with Angular. It lets you create, view, edit
 - Local persistence via `localStorage`
 - Accessible controls (aria-labels)
 - Modern Angular patterns: standalone components, signals, new control flow, reactive forms
+- Content limits and counters: Content field enforces 300 characters and up to 20 new lines, with live counters and tooltips
+- Notes list cards: Content section capped at 240px with a vertical scrollbar if overflow
 
 ## URLs
 
@@ -59,6 +61,21 @@ Notety is a minimal notes app built with Angular. It lets you create, view, edit
   - The input writes to `SearchService.term`; a debounced mirror `SearchService.debouncedTerm` updates after 300ms.
   - `NotesComponent` uses the debounced value to compute a filtered list.
 - Tuning: Adjust the debounce in [`shared/services/search.service.ts`](src/app/shared/services/search.service.ts) (`debounceMs`).
+
+## Content limits and counters
+
+- Limits: The content field allows up to 300 characters and a maximum of 20 new lines.
+- Live counters: Two counters show characters and new lines used (e.g., `123/300`, `3/20`). Hover for tooltips.
+- Enforcement:
+  - Typing: The Enter key is blocked after 20 new lines.
+  - Pasting: Excess new lines are trimmed automatically.
+- Validation messages: When invalid, an inline message appears aligned with the counters.
+- Where implemented:
+  - Form logic/UI: [`shared/note-form/NoteFormComponent`](src/app/shared/note-form/note-form.component.ts) and template [`note-form.component.html`](src/app/shared/note-form/note-form.component.html)
+  - Limits can be adjusted in `NoteFormComponent` via `MAX_CHARS` and `MAX_NEWLINES` constants.
+- Notes list layout:
+  - The content text inside each card is limited to a max height of 240px and becomes scrollable on overflow.
+  - See [`features/notes/notes.component.html`](src/app/features/notes/notes.component.html) and optional scrollbar styles in [`features/notes/notes.component.css`](src/app/features/notes/notes.component.css).
 
 ## Getting started
 

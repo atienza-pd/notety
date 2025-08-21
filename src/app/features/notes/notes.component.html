@@ -19,7 +19,9 @@
           {{ n.title ?? "Untitled" }}
         </h3>
       </header>
-      <p class="text-sm text-gray-700 whitespace-pre-line flex-1">
+      <p
+        class="text-sm text-gray-700 whitespace-pre-line flex-1 max-h-[240px] overflow-y-auto pr-2"
+      >
         {{ n.content }}
       </p>
       <div class="mt-3 flex items-center justify-end">

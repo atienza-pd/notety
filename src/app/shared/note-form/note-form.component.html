@@ -22,6 +22,9 @@
       rows="8"
       formControlName="content"
       placeholder="Write your note..."
+      [attr.maxlength]="maxChars"
+      (keydown.enter)="onEnterKey($event)"
+      (input)="onContentInput()"
       [attr.aria-invalid]="
         form.controls.content.touched && form.controls.content.invalid
           ? true
@@ -32,12 +35,29 @@
         form.controls.content.touched && form.controls.content.invalid
       "
     ></textarea>
-    <p
-      *ngIf="form.controls.content.touched && form.controls.content.invalid"
-      class="mt-2 text-sm text-red-600"
-    >
-      Content is required.
-    </p>
+    <div class="mt-1 flex items-center justify-between text-xs">
+      <div class="text-red-600">
+        @if (form.controls.content.touched && form.controls.content.invalid) {
+        @if (form.controls.content.errors; as e) { @if (e['required']) { Content
+        is required. } @if (e['maxlength']) { Max {{ maxChars }} characters
+        only. } @if (e['maxNewLines']) { Max {{ maxNewlines }} new lines only. }
+        } }
+      </div>
+      <div class="flex items-center justify-end gap-3 text-gray-500">
+        <span
+          title="Characters (used/max)"
+          aria-label="Characters used out of maximum"
+          [class.text-red-600]="charCount > maxChars"
+          >{{ charCount }}/{{ maxChars }}</span
+        >
+        <span
+          title="New lines (used/max)"
+          aria-label="New lines used out of maximum"
+          [class.text-red-600]="newlineCount > maxNewlines"
+          >{{ newlineCount }}/{{ maxNewlines }}</span
+        >
+      </div>
+    </div>
   </div>
   <div class="flex items-center justify-end gap-2">
     <button
