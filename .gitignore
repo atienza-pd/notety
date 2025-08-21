@@ -1,6 +1,7 @@
 # Certs (keep private material out of git)
 certs/*.key
 certs/*.csr
+certs/*.crt
 certs/*.srl
 certs/ca/
 certs/trust/
