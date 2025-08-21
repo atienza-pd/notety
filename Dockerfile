@@ -21,6 +21,13 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy built assets from Angular build
 COPY --from=builder /app/dist/notety /usr/share/nginx/html
 
-EXPOSE 80
+# Install openssl to optionally generate a self-signed cert when none is mounted
+RUN apk add --no-cache openssl
 
-CMD ["nginx", "-g", "daemon off;"]
+# Provide an entrypoint that ensures certs exist (DEV fallback) and starts Nginx
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 80 443
+
+CMD ["/entrypoint.sh"]

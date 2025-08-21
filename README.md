@@ -105,22 +105,67 @@ Tailwind CSS v4 via PostCSS:
 
 - Global styles: [`src/styles.css`](src/styles.css)
 
+## Progressive Web App (PWA)
+
+Notety ships as a PWA:
+
+- Offline-ready via Angular Service Worker
+- Installable on desktop and mobile (Add to Home Screen)
+- Notes persist in `localStorage` for offline use
+
+Local PWA test (production build):
+
+```powershell
+npm run build
+npm run serve:dist
+```
+
+Open http://localhost:8080 and check DevTools → Application → Service Workers. Note: service worker registers only on production builds and over HTTPS or `http://localhost`.
+
+More details, HTTPS/NGINX tips, sub-path deploy, and troubleshooting: see [docs/pwa.md](docs/pwa.md) and [docs/pwa-nginx-fixes.md](docs/pwa-nginx-fixes.md).
+
 ## Docker (WSL) local deployment
 
-This repo includes a Dockerfile and docker-compose.yml to build the Angular app and serve it with Nginx.
+This repo includes a Dockerfile and docker-compose.yml to build the Angular app and serve it with NGINX. HTTPS is enabled for PWA testing.
 
 Build and run:
 
-```bash
+```powershell
 docker compose build
 docker compose up -d
 ```
 
-Open http://localhost:8080
+Open:
+
+- HTTP: http://localhost:8080 (redirects to HTTPS)
+- HTTPS: https://localhost:8443
+
+Certificates:
+
+- If you don’t mount certs, the container generates a self-signed cert for localhost. Browsers may warn; for LAN devices use trusted certs.
+- To use your own certs (mkcert or CA-backed):
+  - Create `./certs/server.crt` and `./certs/server.key` on the host.
+  - For LAN: include the IP/hostname in Subject Alternative Names (SANs).
+  - Uncomment the certs volume in `docker-compose.yml` to mount `./certs` into `/etc/nginx/certs`.
+  - See detailed steps: [docs/docker-certs.md](docs/docker-certs.md)
+
+Generate local CA + server certs for client trust:
+
+- Windows (PowerShell):
+
+  - Run: `./certs/generate-certs.ps1 -Hosts "localhost,127.0.0.1,192.168.1.50,notety.local"`
+  - Trust the CA at `certs/trust/notety-local-ca.crt` on client machines
+
+- macOS/Linux (Bash):
+
+  - Run: `./certs/generate-certs.sh "localhost,127.0.0.1,192.168.1.50,notety.local"`
+  - Trust the CA at `certs/trust/notety-local-ca.crt` on client machines
+
+Then uncomment the certs volume and restart compose.
 
 Notes:
 
-- SPA routing is handled by Nginx (`try_files` to `index.html`).
+- SPA routing handled by NGINX (`try_files` to `index.html`).
 - Rebuild after changes: `docker compose build --no-cache && docker compose up -d`
 - WSL tips: see [docs/wsl-docker-fixes.md](docs/wsl-docker-fixes.md)
 
@@ -130,7 +175,7 @@ Notes:
 - Tags and filters
 - Reordering and drag & drop
 - Markdown support
-- Offline support (PWA)
+- PWA enhancements (background sync, share target, file/URL handling, badges)
 
 ## License
 
