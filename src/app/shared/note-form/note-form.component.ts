@@ -120,7 +120,9 @@ export class NoteFormComponent {
       }
       out += ch;
     }
-    return out;
+      chars.push(ch);
+    }
+    return chars.join('');
   }
 
   private maxNewLinesValidator(maxNewlines: number): ValidatorFn {
