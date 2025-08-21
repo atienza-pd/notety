@@ -194,6 +194,17 @@ Notes:
 - Markdown support
 - PWA enhancements (background sync, share target, file/URL handling, badges)
 
+## Development guidelines
+
+This repo includes concise instructions for contributors and AI assistants: see `.github/instructions/.instructions.md`.
+
+Highlights of the conventions used here (Angular v20+):
+
+- Standalone components, signals for state, and new control flow in templates
+- `input()`/`output()`, `computed()` for derived state, `ChangeDetectionStrategy.OnPush`
+- Prefer reactive forms; use class/style bindings instead of `ngClass`/`ngStyle`
+- Avoid `@HostBinding`/`@HostListener` (use `host` in decorators); use `inject()` for DI
+
 ## License
 
 Apache License 2.0 — see [LICENSE](LICENSE)

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { NoteFormComponent } from '../../shared/note-form/note-form.component';
 import { NotesService } from './notes.service';
@@ -6,7 +6,6 @@ import { createGuid } from '../../shared/utils/guid';
 
 @Component({
   selector: 'app-add-note',
-  standalone: true,
   imports: [NoteFormComponent],
   template: `
     <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-6">
@@ -14,6 +13,7 @@ import { createGuid } from '../../shared/utils/guid';
       <app-note-form (submitForm)="onSave($event)" (cancel)="onCancel()" />
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddNoteComponent {
   private readonly notes = inject(NotesService);

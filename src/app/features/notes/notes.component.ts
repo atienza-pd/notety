@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   OnDestroy,
   computed,
@@ -15,10 +16,10 @@ import { SearchService } from '../../shared/services/search.service';
 
 @Component({
   selector: 'app-notes',
-  standalone: true,
   imports: [RouterLink, NoteDetailsComponent],
   templateUrl: './notes.component.html',
   styleUrl: './notes.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotesComponent implements OnDestroy {
   readonly title = signal('Notes');

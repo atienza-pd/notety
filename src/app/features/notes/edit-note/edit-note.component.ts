@@ -1,4 +1,10 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NoteFormComponent } from '../../../shared/note-form/note-form.component';
 import { CommonModule } from '@angular/common';
@@ -6,10 +12,10 @@ import { NotesService } from '../notes.service';
 
 @Component({
   selector: 'app-edit-note',
-  standalone: true,
   imports: [CommonModule, NoteFormComponent],
   templateUrl: './edit-note.component.html',
   styleUrl: './edit-note.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditNoteComponent {
   private readonly notes = inject(NotesService);
