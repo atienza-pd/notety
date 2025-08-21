@@ -108,7 +108,7 @@ export class NoteFormComponent {
 
   private limitNewlines(value: string, maxNewlines: number): string {
     let count = 0;
-    let out = '';
+    const chars = [];
     for (let i = 0; i < value.length; i++) {
       const ch = value[i];
       if (ch === '\n') {
@@ -118,8 +118,6 @@ export class NoteFormComponent {
         }
         count++;
       }
-      out += ch;
-    }
       chars.push(ch);
     }
     return chars.join('');
