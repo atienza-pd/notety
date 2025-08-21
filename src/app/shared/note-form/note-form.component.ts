@@ -1,4 +1,10 @@
-import { Component, effect, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  input,
+  output,
+} from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -14,10 +20,10 @@ import { Note } from '../../features/models/note.model';
 
 @Component({
   selector: 'app-note-form',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './note-form.component.html',
   styleUrls: ['./note-form.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NoteFormComponent {
   readonly value = input<Partial<Note> | null | undefined>(null);
