@@ -1,5 +1,29 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
   <div>
+    <label
+      for="category"
+      class="block text-sm font-medium leading-6 text-gray-900"
+      >Category<span class="text-red-500">*</span></label
+    >
+    <select
+      id="category"
+      formControlName="categoryId"
+      class="mt-2 block w-full appearance-none rounded-md border-0 bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAUCAMAAACtdX32AAAAdVBMVEUAAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAhMdQaAAAAJ3RSTlMAAAECAwQGBwsOFBwkJTg5RUZ4eYCHkJefpaytrsXGy8zW3+Do8vNn0bsyAAAAYElEQVR42tXROwJDQAAA0Ymw1p9kiT+L5P5HVEi3qJn2lcPjtIuzUIJ/rhIGy762N3XaThqMN1ZPALsZPEzG1x8LrFL77DHBnEMxBewz0fJ6LyFHTPL7xhwzWYrJ9z22AqmQBV757MHfAAAAAElFTkSuQmCC')] bg-[position:100%] bg-no-repeat p-3 py-1.5 text-gray-900 ring-1 ring-gray-300 ring-inset focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm sm:leading-6"
+      [attr.aria-invalid]="
+        form.controls.categoryId.touched && form.controls.categoryId.invalid
+          ? true
+          : null
+      "
+    >
+      @for (cat of categoriesSvc.categories(); track cat.id) {
+      <option [value]="cat.id">{{ cat.Name }}</option>
+      }
+    </select>
+    @if (form.controls.categoryId.touched && form.controls.categoryId.invalid) {
+    <p class="mt-1 text-xs text-red-600">Category is required.</p>
+    }
+  </div>
+  <div>
     <label for="title" class="block text-sm font-medium leading-6 text-gray-900"
       >Title (optional)</label
     >

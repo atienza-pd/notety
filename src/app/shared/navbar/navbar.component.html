@@ -1,39 +1,155 @@
 <nav class="w-full bg-white border-b border-gray-200">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <div class="h-14 flex items-center justify-between">
+    <div class="h-14 flex items-center gap-4 justify-between">
       <div class="text-lg font-semibold text-gray-900">{{ title() }}</div>
 
-      <!-- Search (right-aligned) -->
       @if (!hideSearch()) {
-      <div class="relative w-full max-w-xs">
-        <input
-          type="text"
-          class="block w-full rounded-md border border-gray-300 py-2 pr-9 pl-3 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-          placeholder="Search note here..."
-          [value]="searchTerm()"
-          (input)="onInput($event)"
-          aria-label="Search notes"
-        />
-        <!-- Icon on the right inside input -->
-        <span
-          class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400"
-        >
-          <!-- simple magnifier glyph -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            class="h-4 w-4"
+      <div class="flex items-center gap-3 w-full max-w-xl">
+        <!-- Category Dropdown (left of search) -->
+        <div class="relative">
+          <button
+            type="button"
+            class="inline-flex items-center max-w-[12rem] truncate gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm hover:bg-gray-50"
+            (click)="toggleMenu()"
+            aria-haspopup="listbox"
+            [attr.aria-expanded]="isMenuOpen()"
           >
-            <path
-              fill-rule="evenodd"
-              d="M9 3.5a5.5 5.5 0 1 0 3.473 9.784l3.121 3.122a.75.75 0 1 0 1.06-1.06l-3.121-3.122A5.5 5.5 0 0 0 9 3.5ZM5 9a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </span>
+            <span class="block truncate">
+              {{
+                categoriesSvc.selected()
+                  ? categoriesSvc.selected()?.Name
+                  : "All Categories"
+              }}
+            </span>
+            <span class="ml-auto text-gray-400">
+              <!-- Chevron down icon on right side -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                class="w-4 h-4"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.25 8.29a.75.75 0 0 1-.02-1.08Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </span>
+          </button>
+
+          <!-- Backdrop to close on outside clicks -->
+          @if (isMenuOpen()) {
+          <div class="fixed inset-0 z-10" (click)="isMenuOpen.set(false)"></div>
+          } @if (isMenuOpen()) {
+          <div
+            class="absolute z-20 mt-1 w-56 rounded-md bg-white shadow-lg border border-gray-200"
+          >
+            <ul
+              class="max-h-64 overflow-auto py-1 text-sm text-gray-700"
+              role="listbox"
+            >
+              <!-- Add new Category static entry -->
+              <li>
+                <button
+                  class="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-indigo-600"
+                  (click)="onAddCategory()"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    class="w-4 h-4"
+                  >
+                    <path
+                      d="M10.75 4.75a.75.75 0 0 0-1.5 0v4h-4a.75.75 0 0 0 0 1.5h4v4a.75.75 0 0 0 1.5 0v-4h4a.75.75 0 0 0 0-1.5h-4v-4Z"
+                    />
+                  </svg>
+                  Add new Category
+                </button>
+              </li>
+              <li><hr class="my-1" /></li>
+
+              <!-- Existing categories with edit icon on right; icon should align top if text wraps -->
+              @for (cat of categoriesSvc.categories(); track cat.id) {
+              <li class="px-1">
+                <div class="flex items-start gap-2">
+                  <button
+                    class="flex-1 text-left px-2 py-2 hover:bg-gray-50 rounded"
+                    (click)="selectCategory(cat.id)"
+                  >
+                    <span class="block break-words">
+                      {{ cat.Name }}
+                    </span>
+                  </button>
+                  <button
+                    class="shrink-0 self-start p-2 text-gray-500 hover:text-gray-700"
+                    title="Edit"
+                    (click)="
+                      $event.stopPropagation();
+                      openModal('edit', cat.Name, cat.id)
+                    "
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      class="w-4 h-4"
+                    >
+                      <path
+                        d="M13.586 3.586a2 2 0 0 1 2.828 2.828l-8.5 8.5a2 2 0 0 1-.878.516l-3.163.905a.5.5 0 0 1-.62-.62l.905-3.163a2 2 0 0 1 .516-.878l8.5-8.5Z"
+                      />
+                      <path
+                        d="M12.172 4.998 15 7.828l-1.414 1.414-2.828-2.828L12.172 5Z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </li>
+              }
+            </ul>
+          </div>
+          }
+        </div>
+
+        <!-- Search (right of dropdown) -->
+        <div class="relative flex-1">
+          <input
+            type="text"
+            class="block w-full rounded-md border border-gray-300 py-2 pr-9 pl-3 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            placeholder="Search note here..."
+            [value]="searchTerm()"
+            (input)="onInput($event)"
+            aria-label="Search notes"
+          />
+          <span
+            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              class="h-4 w-4"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M9 3.5a5.5 5.5 0 1 0 3.473 9.784l3.121 3.122a.75.75 0 1 0 1.06-1.06l-3.121-3.122A5.5 5.5 0 0 0 9 3.5ZM5 9a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </span>
+        </div>
       </div>
       }
     </div>
   </div>
 </nav>
+
+@if (showModal()) {
+<app-category-modal
+  [mode]="modalMode()"
+  [initialValue]="modalInitial()"
+  (close)="closeModal()"
+  (save)="saveCategory($event)"
+/>
+}

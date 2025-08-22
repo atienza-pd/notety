@@ -19,11 +19,16 @@ export class AddNoteComponent {
   private readonly notes = inject(NotesService);
   private readonly router = inject(Router);
 
-  async onSave(value: { title?: string; content: string }): Promise<void> {
+  async onSave(value: {
+    title?: string;
+    content: string;
+    categoryId: string;
+  }): Promise<void> {
     this.notes.add({
       id: createGuid(),
       title: value.title,
       content: value.content,
+      categoryId: value.categoryId,
       createdAt: new Date(),
     });
     await this.router.navigate(['/', 'notes']);
