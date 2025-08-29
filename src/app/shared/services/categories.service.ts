@@ -25,7 +25,10 @@ export class CategoriesService {
   readonly selectedId = signal<string | null>(null);
   readonly selected = computed<Category | null>(() => {
     const id = this.selectedId();
-    if (!id) return null;
+    if (!id) {
+      return null;
+    }
+
     return this.categories().find((c) => c.id === id) ?? null;
   });
   readonly hasCategories = computed(() => this.categories().length > 0);
@@ -82,14 +85,22 @@ export class CategoriesService {
 
   editCategory(id: string, newName: string): void {
     const trimmed = newName.trim();
-    if (!trimmed) return;
+    if (!trimmed) {
+      return;
+    }
+
     const list = this.categories();
     const idx = list.findIndex((c) => c.id === id);
-    if (idx < 0) return;
+
+    if (idx < 0) {
+      return;
+    }
+
     // prevent duplicate names (case-insensitive)
     const duplicate = list.some(
       (c, i) => i !== idx && c.Name.toLowerCase() === trimmed.toLowerCase()
     );
+
     if (duplicate) {
       // if duplicate, just select the duplicate target
       const existing = list.find(
@@ -101,10 +112,6 @@ export class CategoriesService {
     const next = [...list];
     next[idx] = { ...next[idx], Name: trimmed };
     this.categories.set(next);
-    // keep selection pointing to the same id
-    if (this.selectedId() === id) {
-      this.selectedId.set(id);
-    }
   }
 
   // persistence helpers
