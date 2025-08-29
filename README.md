@@ -9,6 +9,7 @@ Notety is a minimal notes app built with Angular. It lets you create, view, edit
 - Edit existing notes on a dedicated page
 - Remove notes from the list
 - Search notes (title and content) using the navbar search input with a 300ms debounce; hidden on the add and edit page
+- Categories: add/edit categories, pick a category per note, and filter the list by the selected category; seeded defaults and local persistence
 - Local persistence via `localStorage`
 - Accessible controls (aria-labels)
 - Modern Angular patterns: standalone components, signals, new control flow, reactive forms
@@ -35,6 +36,10 @@ Notety is a minimal notes app built with Angular. It lets you create, view, edit
 - Data and models:
   - [`features/notes/NotesService`](src/app/features/notes/notes.service.ts)
   - [`features/models/Note`](src/app/features/models/note.model.ts)
+  - Categories logic and UI:
+    - Service and state: [`shared/services/CategoriesService`](src/app/shared/services/categories.service.ts)
+    - Navbar dropdown: [`shared/navbar/navbar.component.html`](src/app/shared/navbar/navbar.component.html) and [`shared/navbar/navbar.component.ts`](src/app/shared/navbar/navbar.component.ts)
+    - Add/Edit modal: [`shared/category-modal/CategoryModalComponent`](src/app/shared/category-modal/category-modal.component.ts) and template [`category-modal.component.html`](src/app/shared/category-modal/category-modal.component.html)
   - GUID helper: [`createGuid`](src/app/shared/utils/guid.ts)
 - App shell and routing:
   - [`App`](src/app/app.ts)
@@ -51,6 +56,45 @@ Notety is a minimal notes app built with Angular. It lets you create, view, edit
 - Edit: open `/notes/:id`, update fields, save.
 - Remove: click “Remove” on a card.
 - Search: type in the navbar search on `/notes` to filter by title/content; results update after a short delay. The search is hidden on `/notes/:id` (edit page).
+
+## Categories
+
+Organize notes by category and quickly filter the list.
+
+- Where
+
+  - Category dropdown lives in the navbar to the left of the search on the notes list page (`/notes`).
+  - Modal for Add/Edit opens inline above the page.
+
+- Defaults and persistence
+
+  - On first run, categories are seeded to: Personal, Work, Ideas, Todo, Archive.
+  - Categories are stored in `localStorage` under the key `notety.categories` as objects: `{ id: string, Name: string }`.
+  - The currently selected category is not persisted; refresh resets to “All Categories”.
+  - Legacy storage that contains an array of strings is migrated automatically to the new object shape.
+
+- Filtering behavior
+
+  - Selecting a category filters the notes list to that category; “All Categories” shows everything.
+  - Search and category filtering compose: the final list is filtered by the selected category first, then by the debounced search term.
+
+- Add/Edit
+
+  - Use “Add new Category” inside the dropdown or the edit pencil next to any category.
+  - Name is required and limited to 20 characters; validation is shown in the modal.
+  - Duplicate names (case-insensitive) are prevented. When adding a duplicate, the existing category is selected. When renaming to a duplicate, the duplicate is selected instead.
+  - Category deletion isn’t implemented yet.
+
+- Notes and categories
+  - Each note has a required `categoryId`.
+  - When creating a note, the form defaults to the “Personal” category if available, else the first category.
+  - Notes saved previously without a category are migrated to “Personal” (or the first/created category) on load.
+
+Key implementation points
+
+- Service: `CategoriesService` manages a `categories` signal, a `selectedId`, derives the selected category, and persists changes.
+- Navbar: the dropdown binds to `CategoriesService`, and the modal is wired through outputs to add or edit names.
+- Modal: `CategoryModalComponent` provides title by mode (Add/Edit), enforces required + max length (20), and emits the name on save.
 
 ## Search
 
@@ -96,7 +140,9 @@ ng serve
 Open http://localhost:4200, then:
 
 - Click “+ New”, enter content (title optional), Save.
+- Pick a category in the form (defaults to Personal if present).
 - Use “View” to open the details modal, “Remove” to delete.
+- Filter by category using the navbar dropdown; combine with search as needed.
 
 Build:
 

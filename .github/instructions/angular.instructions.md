@@ -71,6 +71,7 @@ Here is a link to the most recent Angular style guide https://angular.dev/style-
 - Use strict type checking
 - Prefer type inference when the type is obvious
 - Avoid the `any` type; use `unknown` when type is uncertain
+- Always use proper accessibility for methods and variables
 
 ### Angular Best Practices
 

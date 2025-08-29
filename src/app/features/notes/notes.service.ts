@@ -1,9 +1,11 @@
-import { Injectable, effect, signal } from '@angular/core';
+import { Injectable, effect, signal, inject } from '@angular/core';
 import { Note, NoteList } from '../models/note.model';
+import { CategoriesService } from '../../shared/services/categories.service';
 
 @Injectable({ providedIn: 'root' })
 export class NotesService {
   private readonly storageKey = 'notety.notes';
+  private readonly categories = inject(CategoriesService);
 
   readonly notes = signal<NoteList>(this.loadFromStorageOrSeed());
 
@@ -21,13 +23,18 @@ export class NotesService {
         return [];
       }
       const parsed = JSON.parse(raw) as Array<
-        Omit<Note, 'createdAt' | 'updatedAt'> & {
+        Omit<Note, 'createdAt' | 'updatedAt' | 'categoryId'> & {
           createdAt: string;
           updatedAt?: string;
+          categoryId?: string;
         }
       >;
+      const personalId = this.ensurePersonalCategoryId();
       return parsed.map((n) => ({
-        ...n,
+        id: n.id,
+        title: n.title,
+        content: n.content,
+        categoryId: n.categoryId ?? personalId,
         createdAt: new Date(n.createdAt),
         updatedAt: n.updatedAt ? new Date(n.updatedAt) : undefined,
       }));
@@ -48,6 +55,19 @@ export class NotesService {
       // ignore persistence errors
       console.error('Failed to persist notes to localStorage:', err);
     }
+  }
+
+  private ensurePersonalCategoryId(): string {
+    const cats = this.categories.categories();
+    const personal = cats.find((c) => c.Name.toLowerCase() === 'personal');
+    if (personal) return personal.id;
+    // Fallbacks: first category or create 'Personal'
+    if (cats.length > 0) return cats[0].id;
+    this.categories.addCategory('Personal');
+    const created = this.categories
+      .categories()
+      .find((c) => c.Name.toLowerCase() === 'personal');
+    return created ? created.id : '';
   }
 
   add(note: Note): void {

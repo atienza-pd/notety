@@ -4,6 +4,7 @@ import {
   effect,
   input,
   output,
+  inject,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -17,6 +18,7 @@ import {
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Note } from '../../features/models/note.model';
+import { CategoriesService, Category } from '../services/categories.service';
 
 @Component({
   selector: 'app-note-form',
@@ -27,10 +29,15 @@ import { Note } from '../../features/models/note.model';
 })
 export class NoteFormComponent {
   readonly value = input<Partial<Note> | null | undefined>(null);
-  readonly submitForm = output<{ title?: string; content: string }>();
+  readonly submitForm = output<{
+    title?: string;
+    content: string;
+    categoryId: string;
+  }>();
   readonly cancel = output<void>();
 
   readonly form = this.initForm();
+  protected readonly categoriesSvc = inject(CategoriesService);
 
   // limits
   private static readonly MAX_CHARS = 300;
@@ -44,7 +51,14 @@ export class NoteFormComponent {
         this.form.patchValue({
           title: v.title ?? '',
           content: v.content ?? '',
+          categoryId: v.categoryId ?? this.defaultCategoryId(),
         });
+      } else {
+        // when creating a new note, ensure category gets a sensible default
+        const current = this.form.controls.categoryId.value;
+        if (!current) {
+          this.form.controls.categoryId.setValue(this.defaultCategoryId());
+        }
       }
     });
   }
@@ -52,6 +66,7 @@ export class NoteFormComponent {
   private initForm(): FormGroup<{
     title: FormControl<string>;
     content: FormControl<string>;
+    categoryId: FormControl<string>;
   }> {
     const fb = new FormBuilder();
     return fb.nonNullable.group({
@@ -61,15 +76,17 @@ export class NoteFormComponent {
         Validators.maxLength(NoteFormComponent.MAX_CHARS),
         this.maxNewLinesValidator(NoteFormComponent.MAX_NEWLINES),
       ]),
+      categoryId: fb.nonNullable.control<string>('', [Validators.required]),
     });
   }
 
   onSubmit(): void {
     if (this.form.invalid) return;
-    const { title, content } = this.form.getRawValue();
+    const { title, content, categoryId } = this.form.getRawValue();
     this.submitForm.emit({
       title: title?.trim() || undefined,
       content: content.trim(),
+      categoryId,
     });
   }
 
@@ -139,5 +156,12 @@ export class NoteFormComponent {
         ? { maxNewLines: { requiredMax: maxNewlines, actual: count } }
         : null;
     };
+  }
+
+  private defaultCategoryId(): string {
+    const cats: Category[] = this.categoriesSvc.categories();
+    const personal = cats.find((c) => c.Name.toLowerCase() === 'personal');
+    if (personal) return personal.id;
+    return cats[0]?.id ?? '';
   }
 }

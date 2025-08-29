@@ -13,6 +13,7 @@ import { NoteList } from '../models/note.model';
 import { NoteDetailsComponent } from './note-details.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SearchService } from '../../shared/services/search.service';
+import { CategoriesService } from '../../shared/services/categories.service';
 
 @Component({
   selector: 'app-notes',
@@ -30,17 +31,23 @@ export class NotesComponent implements OnDestroy {
     initialValue: this.route.snapshot.queryParamMap,
   });
   private readonly searchSvc = inject(SearchService);
+  private readonly categories = inject(CategoriesService);
   readonly searchTerm = this.searchSvc.debouncedTerm;
 
   readonly filteredNotes = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
     const list = this.notesSvc.notes();
+    const selectedId = this.categories.selectedId();
+
+    const byCategory = selectedId
+      ? list.filter((n) => n.categoryId === selectedId)
+      : list;
 
     if (!term) {
-      return list;
+      return byCategory;
     }
 
-    return list.filter(
+    return byCategory.filter(
       (n) =>
         (n.title ?? '').toLowerCase().includes(term) ||
         n.content.toLowerCase().includes(term)
