@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NavbarComponent } from './navbar.component';
 import { CategoriesService } from '../services/categories.service';
+import { SearchService } from '../services/search.service';
 
 describe('NavbarComponent', () => {
   let component: NavbarComponent;
@@ -11,6 +12,7 @@ describe('NavbarComponent', () => {
     editCategory: jest.Mock;
     selectCategory: jest.Mock;
   };
+  let searchMock: { setTerm: jest.Mock; term: { set: (v: string) => void } };
 
   beforeEach(async () => {
     categoriesMock = {
@@ -18,9 +20,16 @@ describe('NavbarComponent', () => {
       editCategory: jest.fn(),
       selectCategory: jest.fn(),
     };
+    searchMock = {
+      setTerm: jest.fn(),
+      term: { set: (_: string) => void 0 },
+    };
     await TestBed.configureTestingModule({
       imports: [NavbarComponent, RouterTestingModule],
-      providers: [{ provide: CategoriesService, useValue: categoriesMock }],
+      providers: [
+        { provide: CategoriesService, useValue: categoriesMock },
+        { provide: SearchService, useValue: searchMock },
+      ],
     }).compileComponents();
   });
 
@@ -87,5 +96,35 @@ describe('NavbarComponent', () => {
     expect(component.modalInitial()).toBe('Initial Name');
     expect(component.editingId()).toBe('id-123');
     expect(component.showModal()).toBe(true);
+  });
+
+  it('onInput forwards value to SearchService.setTerm', () => {
+    const inputEl = { value: 'hello' } as HTMLInputElement;
+    const ev = { target: inputEl } as unknown as Event;
+    component.onInput(ev);
+    expect(searchMock.setTerm).toHaveBeenCalledWith('hello');
+  });
+
+  it('toggleMenu toggles isMenuOpen signal', () => {
+    expect(component.isMenuOpen()).toBe(false);
+    component.toggleMenu();
+    expect(component.isMenuOpen()).toBe(true);
+    component.toggleMenu();
+    expect(component.isMenuOpen()).toBe(false);
+  });
+
+  it('selectCategory delegates to service and closes menu', () => {
+    component.isMenuOpen.set(true);
+    component.selectCategory('cat-1');
+    expect(categoriesMock.selectCategory).toHaveBeenCalledWith('cat-1');
+    expect(component.isMenuOpen()).toBe(false);
+  });
+
+  it('onAddCategory closes menu and opens modal in add mode', () => {
+    component.isMenuOpen.set(true);
+    const openSpy = jest.spyOn(component, 'openModal');
+    component.onAddCategory();
+    expect(component.isMenuOpen()).toBe(false);
+    expect(openSpy).toHaveBeenCalledWith('add');
   });
 });

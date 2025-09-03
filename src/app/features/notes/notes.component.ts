@@ -63,7 +63,7 @@ export class NotesComponent implements OnDestroy {
   readonly alertMessage = signal<string | null>(null);
   private alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  private readonly syncQuery = effect(() => {
+  protected readonly syncQuery = effect(() => {
     const id = this.qp().get('view');
     if (id) {
       const note = this.notesSvc.findById(id) ?? null;
