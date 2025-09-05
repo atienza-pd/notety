@@ -24,7 +24,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 export class NavbarComponent {
   public readonly title = input.required<string>();
   private readonly searchSvc = inject(SearchService);
-  protected readonly categoriesSvc = inject(CategoriesService);
+  public readonly categoriesSvc = inject(CategoriesService);
   private readonly router = inject(Router);
   private readonly currentUrl = signal<string>(this.router.url);
   private readonly destroyRef = inject(DestroyRef);
@@ -40,8 +40,8 @@ export class NavbarComponent {
         this.currentUrl.set(this.router.url);
       });
   }
-  protected readonly searchTerm = this.searchSvc.term;
-  protected readonly hideSearch = computed(() => {
+  public readonly searchTerm = this.searchSvc.term;
+  public readonly hideSearch = computed(() => {
     const url = this.currentUrl();
     // Hide on edit-note route: /notes/:id and /notes/new
     // Allow search on /notes and /notes?view=...
@@ -49,35 +49,35 @@ export class NavbarComponent {
     return clean.startsWith('/notes/');
   });
 
-  protected onInput(ev: Event): void {
+  public onInput(ev: Event): void {
     const value = (ev.target as HTMLInputElement).value ?? '';
     this.searchSvc.setTerm(value);
   }
 
   // dropdown ui state
-  protected readonly isMenuOpen = signal(false);
+  public readonly isMenuOpen = signal(false);
 
-  protected toggleMenu(): void {
+  public toggleMenu(): void {
     this.isMenuOpen.update((v) => !v);
   }
 
-  protected selectCategory(id: string | null): void {
+  public selectCategory(id: string | null): void {
     this.categoriesSvc.selectCategory(id);
     this.isMenuOpen.set(false);
   }
 
-  protected onAddCategory(): void {
+  public onAddCategory(): void {
     this.isMenuOpen.set(false);
     this.openModal('add');
   }
 
   // modal state
-  protected readonly showModal = signal(false);
-  protected readonly modalMode = signal<'add' | 'edit'>('add');
-  protected readonly modalInitial = signal<string>('');
-  protected readonly editingId = signal<string | null>(null);
+  public readonly showModal = signal(false);
+  public readonly modalMode = signal<'add' | 'edit'>('add');
+  public readonly modalInitial = signal<string>('');
+  public readonly editingId = signal<string | null>(null);
 
-  protected openModal(
+  public openModal(
     mode: 'add' | 'edit',
     initial = '',
     id: string | null = null
@@ -88,11 +88,11 @@ export class NavbarComponent {
     this.showModal.set(true);
   }
 
-  protected closeModal(): void {
+  public closeModal(): void {
     this.showModal.set(false);
   }
 
-  protected saveCategory(name: string): void {
+  public saveCategory(name: string): void {
     const mode = this.modalMode();
     if (mode === 'add') {
       this.categoriesSvc.addCategory(name);
