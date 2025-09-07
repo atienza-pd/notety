@@ -11,11 +11,31 @@
   <ul>
     @for (n of notes(); track $index; let i = $index) {
     <li>
-      <span>{{ n }}</span>
+      <span class="note-content" (click)="viewNote(n, i)">{{ n }}</span>
       <button type="button" (click)="removeNote(i)" aria-label="Remove">
         ✕
       </button>
     </li>
     }
   </ul>
+
+  <!-- Modal Dialog -->
+  @if (isModalOpen()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>View Note</h3>
+        <button type="button" class="close-button" (click)="closeModal()" aria-label="Close">
+          ✕
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ selectedNote() }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" (click)="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+  }
 </section>
