@@ -1,0 +1,33 @@
+@if (visible()) {
+<div
+  role="alert"
+  aria-live="polite"
+  class="group relative mb-4 flex items-start gap-3 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 shadow-sm ring-1 ring-inset ring-amber-200/40"
+>
+  <span class="mt-0.5 select-none text-base" aria-hidden="true">⚠️</span>
+  <div class="flex-1 leading-snug">
+    <span class="font-semibold tracking-tight">Security notice:</span>
+    <span class="font-normal">
+      Do not store passwords, tokens, personal or otherwise sensitive or
+      confidential data. Notes are stored
+      <span
+        class="font-medium underline decoration-amber-400/70 underline-offset-2"
+        >unencrypted</span
+      >
+      in your browser (localStorage) and may be readable by anyone with access
+      to this device or the page context.
+    </span>
+  </div>
+  <button
+    type="button"
+    (click)="dismiss()"
+    aria-label="Dismiss security notice"
+    class="ml-2 inline-flex items-center rounded border border-transparent bg-amber-200/60 px-2 py-1 text-xs font-medium text-amber-900 backdrop-blur-sm transition hover:bg-amber-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-1 active:bg-amber-300"
+  >
+    Dismiss
+  </button>
+  <div
+    class="pointer-events-none absolute inset-0 rounded-md shadow-[0_0_0_1px_rgba(251,191,36,0.35)] group-hover:shadow-[0_0_0_1px_rgba(245,158,11,0.55)] transition"
+  ></div>
+</div>
+}

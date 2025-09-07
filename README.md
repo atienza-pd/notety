@@ -2,6 +2,8 @@
 
 Notety is a minimal notes app built with Angular. It lets you create, view, edit, and remove notes locally (no backend). Notes are persisted in your browser’s localStorage.
 
+> Security Notice: Do not store passwords, API keys, tokens, personal, regulated, or otherwise sensitive / confidential information in Notety. All data is stored unencrypted in your browser (localStorage) and can be read by anyone with access to this device or the page context.
+
 ## Features
 
 - Create notes with optional title and required content

@@ -11,13 +11,14 @@ import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { NotesService } from './notes.service';
 import { NoteList } from '../models/note.model';
 import { NoteDetailsComponent } from './note-details.component';
+import { SensitiveWarningBannerComponent } from '../../shared/sensitive-warning/sensitive-warning-banner.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SearchService } from '../../shared/services/search.service';
 import { CategoriesService } from '../../shared/services/categories.service';
 
 @Component({
   selector: 'app-notes',
-  imports: [RouterLink, NoteDetailsComponent],
+  imports: [RouterLink, NoteDetailsComponent, SensitiveWarningBannerComponent],
   templateUrl: './notes.component.html',
   styleUrl: './notes.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
