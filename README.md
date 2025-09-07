@@ -152,8 +152,24 @@ ng build
 
 Unit tests:
 
+The project uses Jest (via `jest-preset-angular`) instead of the default Karma/Jasmine setup.
+
+Run tests:
+
 ```bash
-ng test
+npm test
+```
+
+Watch mode:
+
+```bash
+npm run test:watch
+```
+
+Coverage report (outputs to `coverage/`):
+
+```bash
+npm run test:coverage
 ```
 
 Lint:
@@ -161,6 +177,10 @@ Lint:
 ```bash
 npm run lint
 ```
+
+## Recommended VS Code extensions
+
+- Jest Runner (`firsttris.vscode-jest-runner`) – run or debug individual Jest tests/spec files via inline code lens or context menu. After installing, you can quickly execute a single test without running the whole suite.
 
 ## Styling
 
