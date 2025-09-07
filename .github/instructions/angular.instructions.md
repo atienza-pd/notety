@@ -85,6 +85,7 @@ Here is a link to the most recent Angular style guide https://angular.dev/style-
 ### Components
 
 - Keep components small and focused on a single responsibility
+- Components should still separate logic (TS), styles (CSS) and templates (HTML)
 - Use `input()` signal instead of decorators, learn more here https://angular.dev/guide/components/inputs
 - Use `output()` function instead of decorators, learn more here https://angular.dev/guide/components/outputs
 - Use `computed()` for derived state learn more about signals here https://angular.dev/guide/signals.
@@ -113,3 +114,8 @@ Here is a link to the most recent Angular style guide https://angular.dev/style-
 - Design services around a single responsibility
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
+
+### Styling
+
+- Use tailwindcss for all styling needs
+- Avoid using global styles, prefer component-scoped styles
