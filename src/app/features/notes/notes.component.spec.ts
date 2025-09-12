@@ -1,11 +1,17 @@
 import { TestBed } from '@angular/core/testing';
 import { NotesComponent } from './notes.component';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('NotesComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NotesComponent],
+      imports: [RouterTestingModule, NotesComponent],
     }).compileComponents();
+  });
+
+  afterEach(() => {
+    // Ensure tests are isolated
+    localStorage.removeItem('notety.notes');
   });
 
   it('should create and render title', () => {
@@ -13,24 +19,41 @@ describe('NotesComponent', () => {
     const component = fixture.componentInstance;
     fixture.detectChanges();
     expect(component).toBeTruthy();
-    const h2: HTMLHeadingElement | null =
-      fixture.nativeElement.querySelector('h2');
-    expect(h2?.textContent).toContain('Notes');
+    const h1: HTMLHeadingElement | null =
+      fixture.nativeElement.querySelector('h1');
+    expect(h1?.textContent).toContain('Notes');
   });
 
-  it('adds a note when form is submitted', () => {
+  it('removes a note when Remove is clicked', () => {
+    // Seed localStorage with one note before component is created
+    localStorage.setItem(
+      'notety.notes',
+      JSON.stringify([
+        {
+          id: 'test-1',
+          title: 'Test Note',
+          content: 'Hello world',
+          createdAt: new Date().toISOString(),
+        },
+      ])
+    );
+
     const fixture = TestBed.createComponent(NotesComponent);
     fixture.detectChanges();
-    const input: HTMLInputElement =
-      fixture.nativeElement.querySelector('input');
-    const form: HTMLFormElement = fixture.nativeElement.querySelector('form');
 
-    input.value = 'New note';
-    input.dispatchEvent(new Event('input'));
-    form.dispatchEvent(new Event('submit'));
+    const getCards = () =>
+      fixture.nativeElement.querySelectorAll('article.bg-white');
+
+    const initialCount = getCards().length;
+    expect(initialCount).toBeGreaterThan(0);
+
+    const removeBtn: HTMLButtonElement | null =
+      fixture.nativeElement.querySelector('button[aria-label="Remove"]');
+    expect(removeBtn).toBeTruthy();
+    removeBtn!.click();
     fixture.detectChanges();
 
-    const items = fixture.nativeElement.querySelectorAll('li');
-    expect(items.length).toBeGreaterThan(0);
+    const afterCount = getCards().length;
+    expect(afterCount).toBe(initialCount - 1);
   });
 });
