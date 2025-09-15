@@ -15,10 +15,16 @@ import { SensitiveWarningBannerComponent } from '../../shared/sensitive-warning/
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SearchService } from '../../shared/services/search.service';
 import { CategoriesService } from '../../shared/services/categories.service';
+import { LinkifyPipe } from '../../shared/pipe/linkify/linkify-pipe';
 
 @Component({
   selector: 'app-notes',
-  imports: [RouterLink, NoteDetailsComponent, SensitiveWarningBannerComponent],
+  imports: [
+    RouterLink,
+    NoteDetailsComponent,
+    SensitiveWarningBannerComponent,
+    LinkifyPipe,
+  ],
   templateUrl: './notes.component.html',
   styleUrl: './notes.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

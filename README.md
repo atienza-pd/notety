@@ -18,6 +18,27 @@ Notety is a minimal notes app built with Angular. It lets you create, view, edit
 - Content limits and counters: Content field enforces 300 characters and up to 20 new lines, with live counters and tooltips
 - Notes list cards: Content section capped at 240px with a vertical scrollbar if overflow
 
+### URL Linkification
+
+The application automatically converts URLs in note content to clickable links:
+
+- Plain text URLs (starting with http://, https://, or www.) are detected and converted to hyperlinks
+- Links open in a new tab with appropriate security attributes (noopener, noreferrer)
+- URLs are styled with indigo color and underline for better visibility
+- Long URLs break properly to maintain readable content
+
+This feature is implemented using a custom Angular pipe (`LinkifyPipe`) that:
+
+1. Detects URLs using regex pattern matching
+2. Transforms them into HTML anchor tags
+3. Sanitizes the resulting HTML to prevent XSS vulnerabilities
+
+Example usage in templates:
+
+```html
+<div [innerHTML]="textWithUrls | linkify"></div>
+```
+
 ## URLs
 
 - `/notes` — list notes
