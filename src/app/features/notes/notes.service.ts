@@ -95,4 +95,44 @@ export class NotesService {
       )
     );
   }
+
+  /**
+   * Replace all notes with a new list (used by restore operation).
+   * Input dates may be strings; they are normalized to Date instances.
+   */
+  replaceAll(
+    list:
+      | NoteList
+      | Array<
+          Omit<Note, 'createdAt' | 'updatedAt'> & {
+            createdAt: string | Date;
+            updatedAt?: string | Date;
+          }
+        >
+  ): void {
+    try {
+      type Incoming =
+        | Note
+        | (Omit<Note, 'createdAt' | 'updatedAt'> & {
+            createdAt: string | Date;
+            updatedAt?: string | Date;
+          });
+      const normalized: NoteList = (list as Incoming[]).map((n) => ({
+        id: n.id,
+        title: (n as Note).title ?? undefined,
+        content: (n as Note).content,
+        categoryId: (n as Note).categoryId,
+        createdAt:
+          n.createdAt instanceof Date ? n.createdAt : new Date(n.createdAt),
+        updatedAt: n.updatedAt
+          ? n.updatedAt instanceof Date
+            ? n.updatedAt
+            : new Date(n.updatedAt)
+          : undefined,
+      }));
+      this.notes.set(normalized);
+    } catch (err) {
+      console.error('Failed to replace notes from backup:', err);
+    }
+  }
 }
