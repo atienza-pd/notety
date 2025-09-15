@@ -70,6 +70,72 @@ export class NotesComponent implements OnDestroy {
   readonly alertMessage = signal<string | null>(null);
   private alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
+  // floating action button state
+  readonly fabOpen = signal(false);
+
+  toggleFab(): void {
+    this.fabOpen.update((o) => !o);
+  }
+
+  backupNotes(): void {
+    try {
+      const data = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        notes: this.notesSvc.notes().map((n) => ({
+          ...n,
+          createdAt: n.createdAt.toISOString(),
+          updatedAt: n.updatedAt ? n.updatedAt.toISOString() : undefined,
+        })),
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: 'application/json',
+      });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `notety-backup-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      this.alertMessage.set('Backup downloaded.');
+      this.autoHideAlert();
+    } catch (err) {
+      this.alertMessage.set('Failed to create backup.');
+      this.autoHideAlert();
+      console.error(err);
+    }
+  }
+
+  restoreNotes(input: HTMLInputElement): void {
+    const file = input.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result));
+        if (!parsed || !Array.isArray(parsed.notes)) {
+          throw new Error('Invalid backup format');
+        }
+        this.notesSvc.replaceAll(parsed.notes);
+        this.alertMessage.set('Restore completed.');
+        this.autoHideAlert();
+      } catch (e) {
+        console.error(e);
+        this.alertMessage.set('Failed to restore.');
+        this.autoHideAlert();
+      } finally {
+        input.value = '';
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  private autoHideAlert(): void {
+    if (this.alertTimeout !== null) {
+      clearTimeout(this.alertTimeout);
+    }
+    this.alertTimeout = setTimeout(() => this.alertMessage.set(null), 4000);
+  }
+
   protected readonly syncQuery = effect(() => {
     const id = this.qp().get('view');
     if (id) {
