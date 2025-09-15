@@ -17,6 +17,7 @@ Notety is a minimal notes app built with Angular. It lets you create, view, edit
 - Modern Angular patterns: standalone components, signals, new control flow, reactive forms
 - Content limits and counters: Content field enforces 300 characters and up to 20 new lines, with live counters and tooltips
 - Notes list cards: Content section capped at 240px with a vertical scrollbar if overflow
+- URL linkification: Automatically converts URLs in note content to clickable links (supports http/https and www patterns)
 
 ## URLs
 
@@ -122,6 +123,22 @@ Key implementation points
 - Notes list layout:
   - The content text inside each card is limited to a max height of 240px and becomes scrollable on overflow.
   - See [`features/notes/notes.component.html`](src/app/features/notes/notes.component.html) and optional scrollbar styles in [`features/notes/notes.component.css`](src/app/features/notes/notes.component.css).
+
+## URL linkification
+
+Notes content automatically converts URLs into clickable links for easy navigation.
+
+- **Supported patterns**: URLs starting with `http://`, `https://`, or `www.`
+- **Auto-prefix**: URLs starting with `www.` automatically get `https://` prepended
+- **Security**: Links open in new tabs with `rel="noopener noreferrer"` for security
+- **Styling**: Links are styled in indigo-600 color with underlines and break-word wrapping
+- **Where it works**: Both in note list cards and detail modal views
+
+Implementation:
+- Pipe: [`shared/pipe/linkify/LinkifyPipe`](src/app/shared/pipe/linkify/linkify-pipe.ts)
+- Applied in: [`features/notes/NoteDetailsComponent`](src/app/features/notes/note-details.component.ts)
+
+Example: `https://example.com` and `www.github.com` become clickable links automatically.
 
 ## Getting started
 
