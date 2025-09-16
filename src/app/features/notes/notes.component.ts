@@ -68,7 +68,89 @@ export class NotesComponent implements OnDestroy {
   );
   readonly isDialogOpen = signal(false);
   readonly alertMessage = signal<string | null>(null);
+  readonly successAlertMessage = signal<string | null>(null);
   private alertTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  // floating action button state
+  readonly fabOpen = signal(false);
+
+  toggleFab(): void {
+    this.fabOpen.update((o) => !o);
+  }
+
+  backupNotes(): void {
+    try {
+      const data = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        categories: this.categories.categories().map((c) => ({
+          id: c.id,
+          Name: c.Name,
+        })),
+        notes: this.notesSvc.notes().map((n) => ({
+          ...n,
+          createdAt: n.createdAt.toISOString(),
+          updatedAt: n.updatedAt ? n.updatedAt.toISOString() : undefined,
+        })),
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: 'application/json',
+      });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `notety-backup-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      this.successAlertMessage.set('Backup downloaded.');
+      this.autoHideSuccessAlert();
+    } catch (err) {
+      this.successAlertMessage.set('Failed to create backup.');
+      this.autoHideSuccessAlert();
+      console.error(err);
+    }
+  }
+
+  restoreNotes(input: HTMLInputElement): void {
+    const file = input.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result));
+        if (!parsed || !Array.isArray(parsed.notes)) {
+          throw new Error('Invalid backup format');
+        }
+        this.notesSvc.replaceAll(parsed.notes);
+        this.categories.replaceAll(parsed.categories ?? []);
+        this.successAlertMessage.set('Restore completed.');
+        this.autoHideSuccessAlert();
+      } catch (e) {
+        console.error(e);
+        this.alertMessage.set('Failed to restore.');
+        this.autoHideSuccessAlert();
+      } finally {
+        input.value = '';
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  private autoHideAlert(): void {
+    if (this.alertTimeout !== null) {
+      clearTimeout(this.alertTimeout);
+    }
+    this.alertTimeout = setTimeout(() => this.alertMessage.set(null), 4000);
+  }
+
+  private autoHideSuccessAlert(): void {
+    if (this.alertTimeout !== null) {
+      clearTimeout(this.alertTimeout);
+    }
+    this.alertTimeout = setTimeout(
+      () => this.successAlertMessage.set(null),
+      4000
+    );
+  }
 
   protected readonly syncQuery = effect(() => {
     const id = this.qp().get('view');
