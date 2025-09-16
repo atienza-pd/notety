@@ -10,7 +10,9 @@
     </a>
   </div>
   <app-sensitive-warning-banner />
-  <div class="grid grid-cols-3 gap-4">
+  <div
+    class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+  >
     @for (n of filteredNotes(); track $index; let i = $index) {
     <article
       class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col"
