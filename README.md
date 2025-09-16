@@ -17,6 +17,7 @@ Notety is a minimal notes app built with Angular. It lets you create, view, edit
 - Modern Angular patterns: standalone components, signals, new control flow, reactive forms
 - Content limits and counters: Content field enforces 300 characters and up to 20 new lines, with live counters and tooltips
 - Notes list cards: Content section capped at 240px with a vertical scrollbar if overflow
+- Responsive notes grid (1 → 2 → 3 → 4 columns at sm / lg / xl breakpoints)
 
 ### URL Linkification
 
@@ -38,6 +39,47 @@ Example usage in templates:
 ```html
 <div [innerHTML]="textWithUrls | linkify"></div>
 ```
+
+### Responsive Notes Grid
+
+The notes list uses a mobile‑first responsive CSS Grid layout powered by Tailwind utility classes:
+
+Container classes:
+
+```
+grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
+```
+
+Breakpoints & column counts:
+
+- Base / <640px: 1 column (full width cards)
+- ≥640px (`sm:`): 2 columns
+- ≥1024px (`lg:`): 3 columns
+- ≥1280px (`xl:`): 4 columns
+
+Why this approach:
+
+- Pure CSS (no JS resize observers required)
+- Consistent row alignment vs. masonry for easier scanning
+- Simple to customize by adjusting breakpoint utility classes
+
+Card internals use `flex flex-col` so the content area (with scroll) expands while header + actions stay compact. The scrollable content region caps height at 240px to prevent very long notes from stretching the grid unevenly.
+
+Customizing:
+
+- Change / add breakpoints in `features/notes/notes.component.html` by editing the `sm: lg: xl:` column utilities (e.g., add `2xl:grid-cols-5`).
+- Adjust spacing with `gap-*` utilities.
+- Modify the max content height via the `max-h-[240px]` class on the paragraph element if you prefer taller cards.
+
+Accessibility & semantics:
+
+- Each note is an `<article>` for better landmark semantics and potential future list virtualisation.
+- Action buttons include `aria-label` attributes (View / Remove) for clear intent.
+
+Performance considerations:
+
+- Keeping a fixed maximum height avoids large layout shifts when filtering or restoring notes.
+- No dynamic measurement code—relies entirely on Tailwind’s generated classes, minimizing runtime overhead.
 
 ## URLs
 
