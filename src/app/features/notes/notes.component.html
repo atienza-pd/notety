@@ -113,5 +113,18 @@
       </div>
     </div>
   </div>
+  } @if (successAlertMessage()) {
+  <div class="fixed top-4 right-4 z-50 w-80">
+    <div class="rounded-md bg-green-50 p-4 shadow">
+      <div class="flex">
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-green-800">Success</h3>
+          <div class="mt-2 text-sm text-green-700">
+            {{ successAlertMessage() }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   }
 </div>

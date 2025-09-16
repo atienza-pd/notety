@@ -57,6 +57,10 @@ export class CategoriesService {
     // Do not persist selected category.
   }
 
+  public replaceAll(categories: Category[]): void {
+    this.categories.set(categories);
+  }
+
   selectCategory(id: string | null): void {
     if (id === null) {
       this.selectedId.set(null);

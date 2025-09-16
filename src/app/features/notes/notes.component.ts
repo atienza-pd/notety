@@ -68,6 +68,7 @@ export class NotesComponent implements OnDestroy {
   );
   readonly isDialogOpen = signal(false);
   readonly alertMessage = signal<string | null>(null);
+  readonly successAlertMessage = signal<string | null>(null);
   private alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
   // floating action button state
@@ -82,6 +83,10 @@ export class NotesComponent implements OnDestroy {
       const data = {
         version: 1,
         exportedAt: new Date().toISOString(),
+        categories: this.categories.categories().map((c) => ({
+          id: c.id,
+          Name: c.Name,
+        })),
         notes: this.notesSvc.notes().map((n) => ({
           ...n,
           createdAt: n.createdAt.toISOString(),
@@ -96,11 +101,11 @@ export class NotesComponent implements OnDestroy {
       a.download = `notety-backup-${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(a.href);
-      this.alertMessage.set('Backup downloaded.');
-      this.autoHideAlert();
+      this.successAlertMessage.set('Backup downloaded.');
+      this.autoHideSuccessAlert();
     } catch (err) {
-      this.alertMessage.set('Failed to create backup.');
-      this.autoHideAlert();
+      this.successAlertMessage.set('Failed to create backup.');
+      this.autoHideSuccessAlert();
       console.error(err);
     }
   }
@@ -116,12 +121,13 @@ export class NotesComponent implements OnDestroy {
           throw new Error('Invalid backup format');
         }
         this.notesSvc.replaceAll(parsed.notes);
-        this.alertMessage.set('Restore completed.');
-        this.autoHideAlert();
+        this.categories.replaceAll(parsed.categories ?? []);
+        this.successAlertMessage.set('Restore completed.');
+        this.autoHideSuccessAlert();
       } catch (e) {
         console.error(e);
         this.alertMessage.set('Failed to restore.');
-        this.autoHideAlert();
+        this.autoHideSuccessAlert();
       } finally {
         input.value = '';
       }
@@ -134,6 +140,16 @@ export class NotesComponent implements OnDestroy {
       clearTimeout(this.alertTimeout);
     }
     this.alertTimeout = setTimeout(() => this.alertMessage.set(null), 4000);
+  }
+
+  private autoHideSuccessAlert(): void {
+    if (this.alertTimeout !== null) {
+      clearTimeout(this.alertTimeout);
+    }
+    this.alertTimeout = setTimeout(
+      () => this.successAlertMessage.set(null),
+      4000
+    );
   }
 
   protected readonly syncQuery = effect(() => {
