@@ -23,7 +23,21 @@
         </h3>
       </header>
       <p
-        class="text-sm text-gray-700 whitespace-pre-line flex-1 max-h-[240px] overflow-y-auto pr-2"
+        [class]="`
+        flex-1 
+        overflow-y-auto
+        pr-2 
+        text-sm
+        whitespace-pre-line 
+        text-gray-700
+        md:min-h-[200px]
+        md:max-h-[200px]
+        lg:max-h-[250px] 
+        lg:min-h-[250px]
+        xl:max-h-[275px]
+        xl:min-h-[275px]
+        2xl:max-h-[245px]
+        2xl:min-h-[245px]`"
         [innerHTML]="n.content | linkify"
       ></p>
       <div class="mt-3 flex items-center justify-end">
