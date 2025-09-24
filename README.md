@@ -18,6 +18,7 @@ Notety is a minimal notes app built with Angular. It lets you create, view, edit
 - Content limits and counters: Content field enforces 300 characters and up to 20 new lines, with live counters and tooltips
 - Notes list cards: Content section capped at 240px with a vertical scrollbar if overflow
 - Responsive notes grid (1 → 2 → 3 → 4 columns at sm / lg / xl breakpoints)
+- Manual backup & restore: ad‑hoc JSON export/import (localStorage only; no sync or encryption)
 
 ### URL Linkification
 
@@ -186,6 +187,145 @@ Key implementation points
   - The content text inside each card is limited to a max height of 240px and becomes scrollable on overflow.
   - See [`features/notes/notes.component.html`](src/app/features/notes/notes.component.html) and optional scrollbar styles in [`features/notes/notes.component.css`](src/app/features/notes/notes.component.css).
 
+## Backup & Restore
+
+Because data lives only in your browser’s `localStorage`, clearing site data, switching browsers/profiles, or uninstalling the PWA will remove your notes. Manual backup lets you migrate or safeguard your data.
+
+### Included in a backup
+
+- Notes (`notety.notes`)
+- Categories (`notety.categories`) — current object shape `{ id: string; Name: string }` (legacy string[] auto‑migrated on load)
+- Metadata you add when exporting (e.g., `version`, `exportedAt`)
+
+Not included: selected category (ephemeral), search term, service worker caches, any future transient UI state.
+
+### JSON schema (current)
+
+```json
+{
+  "version": 1,
+  "exportedAt": "2025-09-23T12:34:56.789Z",
+  "notes": [
+    /* Note objects */
+  ],
+  "categories": [
+    /* { id, Name } objects */
+  ]
+}
+```
+
+If you change structures later, bump `version` and provide a migration on import.
+
+### Quick export (temporary console approach)
+
+1. Open the app at `/notes`.
+2. DevTools → Console, paste and run:
+
+```javascript
+(() => {
+  const notes = JSON.parse(localStorage.getItem("notety.notes") || "[]");
+  const rawCats = localStorage.getItem("notety.categories");
+  let categories = [];
+  try {
+    const parsed = JSON.parse(rawCats || "[]");
+    if (Array.isArray(parsed)) {
+      if (parsed.every((x) => typeof x === "string")) {
+        // legacy string[] -> object shape
+        categories = parsed.map((Name) => ({ id: Name.toLowerCase().replace(/\s+/g, "-"), Name }));
+      } else {
+        categories = parsed;
+      }
+    }
+  } catch {
+    categories = [];
+  }
+  const payload = { version: 1, exportedAt: new Date().toISOString(), notes, categories };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `notety-backup-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.json`;
+  a.click();
+})();
+```
+
+Produces a `notety-backup-YYYY-MM-DD-HH-MM-SS.json` file.
+
+### Quick restore
+
+1. (Recommended) Export first as a safety copy.
+2. Open the backup file, review contents.
+3. In DevTools Console:
+
+```javascript
+// Paste the JSON object (not a string) after the '='
+const backup = {
+  /* ...backup JSON... */
+};
+
+if (backup && backup.version === 1) {
+  localStorage.setItem("notety.notes", JSON.stringify(backup.notes || []));
+  localStorage.setItem("notety.categories", JSON.stringify(backup.categories || []));
+  console.log("Restore complete; reloading.");
+  location.reload();
+} else {
+  console.error("Unsupported or malformed backup.");
+}
+```
+
+If categories were legacy string[] originally, they will be migrated automatically on next load.
+
+### Planned UI (future enhancement)
+
+- Export button (e.g., in a Settings / overflow menu) → triggers JSON download
+- Import dialog with file picker → parse → confirm overwrite → run migration → reload
+- Validation: reject malformed JSON, >5MB, or unsupported version
+
+### Safety & best practices
+
+- Keep at least one external copy (cloud drive, encrypted disk, git private repo)
+- Treat backups as sensitive (plain text)
+- Verify the file (open & skim) before deleting older versions
+
+### Migration guidance
+
+When evolving schema:
+
+- Preserve unknown fields on import (forward compatibility)
+- Provide a `migrateBackup(data)` utility handling version steps (e.g., 1→2)
+- Avoid destructive renames without fallback defaults
+
+### Troubleshooting
+
+| Symptom                     | Likely cause                               | Fix                                          |
+| --------------------------- | ------------------------------------------ | -------------------------------------------- |
+| Notes missing after restore | Wrong key names or empty arrays            | Inspect backup JSON structure                |
+| Duplicate categories        | Restored over existing without clearing    | Clear `localStorage` first or merge manually |
+| JSON parse error            | File corrupted / manual edit mistake       | Re-export or repair JSON syntax              |
+| Unexpected note order       | Order not stored (no ordering feature yet) | Implement & persist ordering (future)        |
+
+### Minimal helper snippet (optional future util)
+
+```typescript
+export interface NotetyBackupV1 {
+  version: 1;
+  exportedAt: string;
+  notes: any[];
+  categories: any[];
+}
+export function createBackup(): NotetyBackupV1 {
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    notes: JSON.parse(localStorage.getItem("notety.notes") || "[]"),
+    categories: JSON.parse(localStorage.getItem("notety.categories") || "[]"),
+  };
+}
+```
+
+### Disclaimer
+
+Backups are only current at the time you export them. No automatic/scheduled export, sync, or encryption features exist yet.
+
 ## Getting started
 
 Prereqs: Node.js and npm.
@@ -335,145 +475,6 @@ Highlights of the conventions used here (Angular v20+):
 - `input()`/`output()`, `computed()` for derived state, `ChangeDetectionStrategy.OnPush`
 - Prefer reactive forms; use class/style bindings instead of `ngClass`/`ngStyle`
 - Avoid `@HostBinding`/`@HostListener` (use `host` in decorators); use `inject()` for DI
-
-## Backup & Restore
-
-Because data lives only in your browser’s `localStorage`, clearing site data, switching browsers/profiles, or uninstalling the PWA will remove your notes. Manual backup lets you migrate or safeguard your data.
-
-### Included in a backup
-
-- Notes (`notety.notes`)
-- Categories (`notety.categories`) — current object shape `{ id: string; Name: string }` (legacy string[] auto‑migrated on load)
-- Metadata you add when exporting (e.g., `version`, `exportedAt`)
-
-Not included: selected category (ephemeral), search term, service worker caches, any future transient UI state.
-
-### JSON schema (current)
-
-```json
-{
-  "version": 1,
-  "exportedAt": "2025-09-23T12:34:56.789Z",
-  "notes": [
-    /* Note objects */
-  ],
-  "categories": [
-    /* { id, Name } objects */
-  ]
-}
-```
-
-If you change structures later, bump `version` and provide a migration on import.
-
-### Quick export (temporary console approach)
-
-1. Open the app at `/notes`.
-2. DevTools → Console, paste and run:
-
-```javascript
-(() => {
-  const notes = JSON.parse(localStorage.getItem("notety.notes") || "[]");
-  const rawCats = localStorage.getItem("notety.categories");
-  let categories = [];
-  try {
-    const parsed = JSON.parse(rawCats || "[]");
-    if (Array.isArray(parsed)) {
-      if (parsed.every((x) => typeof x === "string")) {
-        // legacy string[] -> object shape
-        categories = parsed.map((Name) => ({ id: Name.toLowerCase().replace(/\s+/g, "-"), Name }));
-      } else {
-        categories = parsed;
-      }
-    }
-  } catch {
-    categories = [];
-  }
-  const payload = { version: 1, exportedAt: new Date().toISOString(), notes, categories };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `notety-backup-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.json`;
-  a.click();
-})();
-```
-
-Produces a `notety-backup-YYYY-MM-DD-HH-MM-SS.json` file.
-
-### Quick restore
-
-1. (Recommended) Export first as a safety copy.
-2. Open the backup file, review contents.
-3. In DevTools Console:
-
-```javascript
-// Paste the JSON object (not a string) after the '='
-const backup = {
-  /* ...backup JSON... */
-};
-
-if (backup && backup.version === 1) {
-  localStorage.setItem("notety.notes", JSON.stringify(backup.notes || []));
-  localStorage.setItem("notety.categories", JSON.stringify(backup.categories || []));
-  console.log("Restore complete; reloading.");
-  location.reload();
-} else {
-  console.error("Unsupported or malformed backup.");
-}
-```
-
-If categories were legacy string[] originally, they will be migrated automatically on next load.
-
-### Planned UI (future enhancement)
-
-- Export button (e.g., in a Settings / overflow menu) → triggers JSON download
-- Import dialog with file picker → parse → confirm overwrite → run migration → reload
-- Validation: reject malformed JSON, >5MB, or unsupported version
-
-### Safety & best practices
-
-- Keep at least one external copy (cloud drive, encrypted disk, git private repo)
-- Treat backups as sensitive (plain text)
-- Verify the file (open & skim) before deleting older versions
-
-### Migration guidance
-
-When evolving schema:
-
-- Preserve unknown fields on import (forward compatibility)
-- Provide a `migrateBackup(data)` utility handling version steps (e.g., 1→2)
-- Avoid destructive renames without fallback defaults
-
-### Troubleshooting
-
-| Symptom                     | Likely cause                               | Fix                                          |
-| --------------------------- | ------------------------------------------ | -------------------------------------------- |
-| Notes missing after restore | Wrong key names or empty arrays            | Inspect backup JSON structure                |
-| Duplicate categories        | Restored over existing without clearing    | Clear `localStorage` first or merge manually |
-| JSON parse error            | File corrupted / manual edit mistake       | Re-export or repair JSON syntax              |
-| Unexpected note order       | Order not stored (no ordering feature yet) | Implement & persist ordering (future)        |
-
-### Minimal helper snippet (optional future util)
-
-```typescript
-export interface NotetyBackupV1 {
-  version: 1;
-  exportedAt: string;
-  notes: any[];
-  categories: any[];
-}
-export function createBackup(): NotetyBackupV1 {
-  return {
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    notes: JSON.parse(localStorage.getItem("notety.notes") || "[]"),
-    categories: JSON.parse(localStorage.getItem("notety.categories") || "[]"),
-  };
-}
-```
-
-### Disclaimer
-
-Backups are only current at the time you export them. No automatic/scheduled export, sync, or encryption features exist yet.
 
 ## License
 
