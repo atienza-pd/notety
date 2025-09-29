@@ -15,7 +15,7 @@ Notety is a minimal notes app built with Angular. It lets you create, view, edit
 - Local persistence via `localStorage`
 - Accessible controls (aria-labels)
 - Modern Angular patterns: standalone components, signals, new control flow, reactive forms
-- Content limits and counters: Content field enforces 300 characters and up to 20 new lines, with live counters and tooltips
+- Content limits and counters: Content field enforces 1000 characters and up to 20 new lines, with live counters and tooltips
 - Notes list cards: Content section capped at 240px with a vertical scrollbar if overflow
 - Responsive notes grid (1 → 2 → 3 → 4 columns at sm / lg / xl breakpoints)
 - Manual backup & restore: ad‑hoc JSON export/import (localStorage only; no sync or encryption)
@@ -174,8 +174,8 @@ Key implementation points
 
 ## Content limits and counters
 
-- Limits: The content field allows up to 300 characters and a maximum of 20 new lines.
-- Live counters: Two counters show characters and new lines used (e.g., `123/300`, `3/20`). Hover for tooltips.
+- Limits: The content field allows up to 1000 characters and a maximum of 20 new lines.
+- Live counters: Two counters show characters and new lines used (e.g., `123/1000`, `3/20`). Hover for tooltips.
 - Enforcement:
   - Typing: The Enter key is blocked after 20 new lines.
   - Pasting: Excess new lines are trimmed automatically.
