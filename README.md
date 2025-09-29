@@ -355,6 +355,12 @@ Build:
 ng build
 ```
 
+Production build:
+
+```bash
+npm run build:prod
+```
+
 Unit tests:
 
 The project uses Jest (via `jest-preset-angular`) instead of the default Karma/Jasmine setup.
