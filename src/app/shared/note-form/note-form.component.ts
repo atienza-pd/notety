@@ -40,7 +40,7 @@ export class NoteFormComponent {
   protected readonly categoriesSvc = inject(CategoriesService);
 
   // limits
-  private static readonly MAX_CHARS = 300;
+  private static readonly MAX_CHARS = 1000;
   private static readonly MAX_NEWLINES = 20;
 
   constructor() {
