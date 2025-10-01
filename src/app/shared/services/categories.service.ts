@@ -61,6 +61,11 @@ export class CategoriesService {
     this.categories.set(categories);
   }
 
+  public getName(categoryId: string): string | null {
+    const category = this.categories().find((c) => c.id === categoryId);
+    return category ? category.Name : null;
+  }
+
   selectCategory(id: string | null): void {
     if (id === null) {
       this.selectedId.set(null);

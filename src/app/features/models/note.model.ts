@@ -5,6 +5,7 @@ export interface Note {
   categoryId: string;
   createdAt: Date;
   updatedAt?: Date;
+  categoryName?: string; // populated when listing notes
 }
 
 export type NoteList = Note[];

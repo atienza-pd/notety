@@ -40,22 +40,30 @@
         2xl:min-h-[245px]`"
         [innerHTML]="n.content | linkify"
       ></p>
-      <div class="mt-3 flex items-center justify-end">
-        <a
-          [routerLink]="['/notes']"
-          [queryParams]="{ view: n.id }"
-          aria-label="View"
-          class="text-sm text-indigo-600 hover:text-indigo-700 mr-4"
-          >View</a
-        >
-        <button
-          type="button"
-          (click)="removeNote(i)"
-          aria-label="Remove"
-          class="text-sm text-red-600 hover:text-red-700"
-        >
-          Remove
-        </button>
+      <div class="mt-3 flex items-center justify-between">
+        @if(n.title){<app-pills [text]="n.categoryName ?? ''"></app-pills
+        >}@else{
+        <div>
+          <!-- Placeholder for empty categories -->
+        </div>
+        }
+        <div class="flex items-center justify-end">
+          <a
+            [routerLink]="['/notes']"
+            [queryParams]="{ view: n.id }"
+            aria-label="View"
+            class="text-sm text-indigo-600 hover:text-indigo-700 mr-4"
+            >View</a
+          >
+          <button
+            type="button"
+            (click)="removeNote(i)"
+            aria-label="Remove"
+            class="text-sm text-red-600 hover:text-red-700"
+          >
+            Remove
+          </button>
+        </div>
       </div>
     </article>
     }
