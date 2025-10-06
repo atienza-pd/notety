@@ -9,13 +9,14 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { NotesService } from './notes.service';
-import { NoteList } from '../models/note.model';
+import { Note, NoteList } from '../models/note.model';
 import { NoteDetailsComponent } from './note-details.component';
 import { SensitiveWarningBannerComponent } from '../../shared/sensitive-warning/sensitive-warning-banner.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SearchService } from '../../shared/services/search.service';
 import { CategoriesService } from '../../shared/services/categories.service';
 import { LinkifyPipe } from '../../shared/pipe/linkify/linkify-pipe';
+import { PillsComponent } from '../../shared/pills/pills.component';
 
 @Component({
   selector: 'app-notes',
@@ -24,6 +25,7 @@ import { LinkifyPipe } from '../../shared/pipe/linkify/linkify-pipe';
     NoteDetailsComponent,
     SensitiveWarningBannerComponent,
     LinkifyPipe,
+    PillsComponent,
   ],
   templateUrl: './notes.component.html',
   styleUrl: './notes.component.css',
@@ -51,14 +53,21 @@ export class NotesComponent implements OnDestroy {
       : list;
 
     if (!term) {
-      return byCategory;
+      return byCategory.map((n: Note) => ({
+        ...n,
+        categoryName: this.categories.getName(n.categoryId),
+      }));
     }
 
-    return byCategory.filter(
+    const byTitleAndContent = byCategory.filter(
       (n) =>
         (n.title ?? '').toLowerCase().includes(term) ||
         n.content.toLowerCase().includes(term)
     );
+    return byTitleAndContent.map((n) => ({
+      ...n,
+      categoryName: this.categories.getName(n.categoryId),
+    })); // return copies to ensure reactivity;
   });
 
   // dialog state
