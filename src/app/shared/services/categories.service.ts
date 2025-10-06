@@ -63,7 +63,7 @@ export class CategoriesService {
 
   public getName(categoryId: string): string | null {
     const category = this.categories().find((c) => c.id === categoryId);
-    return category ? category.Name : null;
+    return category?.Name || null;
   }
 
   selectCategory(id: string | null): void {
