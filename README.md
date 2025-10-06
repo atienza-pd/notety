@@ -12,6 +12,7 @@ Notety is a minimal notes app built with Angular. It lets you create, view, edit
 - Remove notes from the list
 - Search notes (title and content) using the navbar search input with a 300ms debounce; hidden on the add and edit page
 - Categories: add/edit categories, pick a category per note, and filter the list by the selected category; seeded defaults and local persistence
+- Category pills: each note card shows a compact pill with its category name for quick at‑a‑glance scanning while browsing all notes
 - Local persistence via `localStorage`
 - Accessible controls (aria-labels)
 - Modern Angular patterns: standalone components, signals, new control flow, reactive forms
@@ -155,12 +156,48 @@ Organize notes by category and quickly filter the list.
   - Each note has a required `categoryId`.
   - When creating a note, the form defaults to the “Personal” category if available, else the first category.
   - Notes saved previously without a category are migrated to “Personal” (or the first/created category) on load.
+  - When listing notes ("All Categories" selected) each note card displays its category as a small pill for rapid visual grouping.
 
 Key implementation points
 
 - Service: `CategoriesService` manages a `categories` signal, a `selectedId`, derives the selected category, and persists changes.
 - Navbar: the dropdown binds to `CategoriesService`, and the modal is wired through outputs to add or edit names.
 - Modal: `CategoryModalComponent` provides title by mode (Add/Edit), enforces required + max length (20), and emits the name on save.
+- Pills: `PillsComponent` renders a styled Tailwind pill (rounded border, indigo text) showing the category name inside each note card.
+
+## Category Pills
+
+Small visual “pills” show the category of each note directly in the notes grid when you are viewing all categories. This improves scan speed by letting you visually cluster related notes without opening filters.
+
+Behavior:
+
+- Only rendered when a note has a resolvable `categoryName` and the list view includes that note (e.g., the “All Categories” filter or any filter where categories are still relevant).
+- Hidden placeholder container keeps layout stable if a category is missing (rare after migrations).
+
+Implementation:
+
+- Lightweight standalone component: `shared/pills/PillsComponent` (uses Angular signals via `input.required()`)
+- Pure Tailwind utility styling; no additional CSS logic.
+- Added inside each note card header/action row in `features/notes/notes.component.html`:
+
+  ```html
+  @if (n.categoryName) {<app-pills [text]="n.categoryName" />}
+  ```
+
+Accessibility & UX:
+
+- `title` attribute on the `<span>` exposes the full category name on hover for truncated/long names (though names are short by validation).
+- Non-interactive (purely informational) to reduce tab stops.
+
+Customization ideas:
+
+- Add color‑coding per category (e.g., map hash of name to a Tailwind color class)
+- Make pills clickable to set the active category filter
+- Add an icon or emoji prefix stored with category metadata in a future schema version
+
+Testing:
+
+- See `shared/pills/pills.component.spec.ts` for creation and class presence tests.
 
 ## Search
 
