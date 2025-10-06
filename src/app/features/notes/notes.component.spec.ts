@@ -152,7 +152,10 @@ describe('NotesComponent syncQuery effect', () => {
         { provide: SearchService, useValue: { debouncedTerm: signal('') } },
         {
           provide: CategoriesService,
-          useValue: { selectedId: signal<string | null>(null) },
+          useValue: {
+            selectedId: signal<string | null>(null),
+            getName: jest.fn(),
+          },
         },
         {
           provide: ActivatedRoute,
@@ -270,7 +273,10 @@ describe('NotesComponent filteredNotes computed', () => {
         { provide: SearchService, useValue: { debouncedTerm: signal('') } },
         {
           provide: CategoriesService,
-          useValue: { selectedId: signal<string | null>(null) },
+          useValue: {
+            selectedId: signal<string | null>(null),
+            getName: jest.fn(),
+          },
         },
         {
           provide: ActivatedRoute,
@@ -292,6 +298,7 @@ describe('NotesComponent filteredNotes computed', () => {
     };
     const cats = TestBed.inject(CategoriesService) as unknown as {
       selectedId: ReturnType<typeof signal<string | null>>;
+      getName: (id: string) => string | null;
     };
     return { fixture, component, search, cats };
   }

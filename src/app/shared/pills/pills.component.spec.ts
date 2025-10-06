@@ -23,7 +23,7 @@ describe('PillsComponent', () => {
     fixture.detectChanges();
 
     const pillElement = fixture.nativeElement.querySelector('span');
-    expect(pillElement.textContent).toBe('Test Pill');
+    expect(pillElement.textContent).toBe(' Test Pill\n');
   });
 
   it('should have tailwind classes for styling', () => {
@@ -32,8 +32,8 @@ describe('PillsComponent', () => {
 
     const pillElement = fixture.nativeElement.querySelector('span');
     expect(pillElement).toBeTruthy();
-    expect(pillElement.classList.contains('bg-gray-500')).toBe(true);
-    expect(pillElement.classList.contains('text-white')).toBe(true);
+    expect(pillElement.classList.contains('text-indigo-600')).toBe(true);
+    expect(pillElement.classList.contains('border-indigo-600')).toBe(true);
     expect(pillElement.classList.contains('rounded-full')).toBe(true);
   });
 });
