@@ -125,6 +125,18 @@
     </div>
   </div>
   }
+  <!-- Delete Confirmation Dialog -->
+  @if(deleteDialog().show){
+  <app-confirmation-dialog
+    [title]="`Delete Note`"
+    message="Are you sure you want to delete this note? This action cannot be undone."
+    confirmButtonText="Delete"
+    cancelButtonText="Keep"
+    (confirm)="confirmDelete(deleteDialog().noteIndex)"
+    (cancel)="closeDeleteDialog()"
+    (close)="closeDeleteDialog()"
+  />
+  }
 
   <!-- Toast-like Alert -->
   @if (alertMessage()) {

@@ -17,6 +17,7 @@ import { SearchService } from '../../shared/services/search.service';
 import { CategoriesService } from '../../shared/services/categories.service';
 import { LinkifyPipe } from '../../shared/pipe/linkify/linkify-pipe';
 import { PillsComponent } from '../../shared/pills/pills.component';
+import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-notes',
@@ -26,6 +27,7 @@ import { PillsComponent } from '../../shared/pills/pills.component';
     SensitiveWarningBannerComponent,
     LinkifyPipe,
     PillsComponent,
+    ConfirmationDialogComponent,
   ],
   templateUrl: './notes.component.html',
   styleUrl: './notes.component.css',
@@ -79,12 +81,23 @@ export class NotesComponent implements OnDestroy {
   readonly alertMessage = signal<string | null>(null);
   readonly successAlertMessage = signal<string | null>(null);
   private alertTimeout: ReturnType<typeof setTimeout> | null = null;
+  readonly deleteDialog = signal({
+    show: false,
+    noteIndex: null as number | null,
+  });
 
   // floating action button state
   readonly fabOpen = signal(false);
 
   toggleFab(): void {
     this.fabOpen.update((o) => !o);
+  }
+
+  public confirmDelete(noteIndex: number | null): void {
+    if (noteIndex !== null) {
+      this.notesSvc.removeAt(noteIndex);
+      this.deleteDialog.set({ show: false, noteIndex: null });
+    }
   }
 
   backupNotes(): void {
@@ -187,7 +200,7 @@ export class NotesComponent implements OnDestroy {
   });
 
   removeNote(index: number): void {
-    this.notesSvc.removeAt(index);
+    this.deleteDialog.set({ show: true, noteIndex: index });
   }
 
   closeDialog(): void {
@@ -196,6 +209,10 @@ export class NotesComponent implements OnDestroy {
     this.viewingNote.set(null);
     // clear query params so dialog doesn't reopen on refresh
     this.router.navigate(['/', 'notes'], { queryParams: {} });
+  }
+
+  public closeDeleteDialog(): void {
+    this.deleteDialog.set({ show: false, noteIndex: null });
   }
 
   ngOnDestroy(): void {
