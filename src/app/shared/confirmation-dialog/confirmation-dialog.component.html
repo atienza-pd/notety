@@ -1,12 +1,13 @@
-<!-- Backdrop -->
-<div class="fixed inset-0 bg-black/40 z-40" (click)="onBackdropClick()"></div>
-
-<!-- Modal -->
+<!-- Modal with backdrop -->
 <div
-  class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
   [attr.aria-labelledby]="'confirmation-dialog-title'"
+  (click)="onBackdropClick()"
 >
-  <div class="w-full max-w-md rounded-lg bg-white shadow-lg relative">
+  <div
+    class="w-full max-w-md rounded-lg bg-white shadow-lg relative"
+    (click)="$event.stopPropagation()"
+  >
     <!-- Header -->
     <div
       class="px-6 py-4 border-b border-gray-200 flex items-center justify-between"
