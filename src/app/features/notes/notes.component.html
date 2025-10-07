@@ -18,7 +18,10 @@
       class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col"
     >
       <header class="mb-2">
-        <h3 class="text-base font-medium text-gray-900">
+        <h3
+          [title]="n.title ?? 'Untitled'"
+          class="block cursor-default text-base font-medium truncate text-gray-900"
+        >
           {{ n.title ?? "Untitled" }}
         </h3>
       </header>
