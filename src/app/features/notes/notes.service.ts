@@ -71,6 +71,7 @@ export class NotesService {
 
   removeAt(index: number): void {
     this.notes.update((list) => list.filter((_, i) => i !== index));
+    this.saveToStorage(this.notes());
   }
 
   findById(id: string): Note | undefined {

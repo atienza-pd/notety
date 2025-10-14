@@ -146,8 +146,6 @@ describe('NotesService update', () => {
     const list = svc.notes();
     expect(list.length).toBe(1);
     expect(list[0].id).toBe('n1');
-
-    jest.advanceTimersByTime(200);
     expect(setItemSpy).toHaveBeenCalled();
   });
 
