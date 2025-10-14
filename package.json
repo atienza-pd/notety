@@ -1,6 +1,6 @@
 {
   "name": "notety",
-  "version": "0.0.0",
+  "version": "1.1.1",
   "license": "Apache-2.0",
   "scripts": {
     "ng": "ng",
@@ -12,7 +12,10 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --config jest.config.js",
     "serve:dist": "npx http-server dist/notety/browser -p 8080 -c-1",
-    "lint": "eslint \"src/**/*.ts\""
+    "lint": "eslint \"src/**/*.ts\"",
+    "generate:version": "node scripts/generate-version.cjs",
+    "prebuild:prod": "npm run generate:version",
+    "prestart": "npm run generate:version"
   },
   "prettier": {
     "overrides": [
