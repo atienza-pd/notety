@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { NoteFormComponent } from '../../shared/note-form/note-form.component';
 import { NotesService } from './notes.service';
 import { createGuid } from '../../shared/utils/guid';
+import { CategoriesService } from '../../shared/services/categories.service';
 
 @Component({
   selector: 'app-add-note',
@@ -17,6 +18,7 @@ import { createGuid } from '../../shared/utils/guid';
 })
 export class AddNoteComponent {
   private readonly notes = inject(NotesService);
+  private readonly categories = inject(CategoriesService);
   private readonly router = inject(Router);
 
   async onSave(value: {
@@ -31,6 +33,7 @@ export class AddNoteComponent {
       categoryId: value.categoryId,
       createdAt: new Date(),
     });
+    this.categories.selectedId.set(value.categoryId);
     await this.router.navigate(['/', 'notes']);
   }
 

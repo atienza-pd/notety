@@ -9,13 +9,6 @@ export class NotesService {
 
   readonly notes = signal<NoteList>(this.loadFromStorageOrSeed());
 
-  // No injector needed: service is providedIn 'root' (app-lifetime); effect cleans up its debounce timer
-  private readonly persistEffect = effect((onCleanup) => {
-    const current = this.notes();
-    const handle = setTimeout(() => this.saveToStorage(current), 150);
-    onCleanup(() => clearTimeout(handle));
-  });
-
   private loadFromStorageOrSeed(): NoteList {
     try {
       const raw = localStorage.getItem(this.storageKey);
@@ -70,30 +63,38 @@ export class NotesService {
     return created ? created.id : '';
   }
 
-  add(note: Note): void {
-    this.notes.update((list) => [note, ...list]);
+  public add(note: Note): void {
+    const updatedList = [note, ...this.notes()];
+    this.notes.set(updatedList);
+    this.saveToStorage(updatedList);
   }
 
   removeAt(index: number): void {
     this.notes.update((list) => list.filter((_, i) => i !== index));
+    this.saveToStorage(this.notes());
   }
 
   findById(id: string): Note | undefined {
     return this.notes().find((n) => n.id === id);
   }
 
-  update(id: string, changes: Partial<Omit<Note, 'id' | 'createdAt'>>): void {
-    this.notes.update((list) =>
-      list.map((n) =>
-        n.id === id
-          ? {
-              ...n,
-              ...changes,
-              updatedAt: new Date(),
-            }
-          : n
-      )
+  public update(
+    id: string,
+    changes: Partial<Omit<Note, 'id' | 'createdAt'>>
+  ): void {
+    const updatedList = this.notes().map((n) =>
+      n.id === id
+        ? {
+            ...n,
+            ...changes,
+            updatedAt: new Date(),
+          }
+        : n
     );
+
+    this.notes.set(updatedList);
+
+    this.saveToStorage(updatedList);
   }
 
   /**
