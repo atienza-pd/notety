@@ -122,7 +122,25 @@ describe('NotesComponent', () => {
     const removeBtn: HTMLButtonElement | null =
       fixture.nativeElement.querySelector('button[aria-label="Remove"]');
     expect(removeBtn).toBeTruthy();
+    // First click opens confirmation dialog
     removeBtn!.click();
+    fixture.detectChanges();
+
+    // Confirmation dialog should now be present
+    const dialog = fixture.nativeElement.querySelector(
+      'app-confirmation-dialog'
+    );
+    expect(dialog).toBeTruthy();
+
+    // Find the Delete confirm button by its text content
+    const buttons = Array.from(
+      dialog.querySelectorAll('button') as NodeListOf<HTMLButtonElement>
+    );
+    const confirmButton = buttons.find((b) =>
+      /delete/i.test(b.textContent || '')
+    );
+    expect(confirmButton).toBeTruthy();
+    confirmButton!.click();
     fixture.detectChanges();
 
     const afterCount = getCards().length;
