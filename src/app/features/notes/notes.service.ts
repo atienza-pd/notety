@@ -1,19 +1,20 @@
-import { Injectable, effect, signal, inject } from '@angular/core';
-import { Note, NoteList } from '../models/note.model';
+import { Injectable, inject, signal } from '@angular/core';
 import { CategoriesService } from '../../shared/services/categories.service';
+import { Note, NoteList } from '../models/note.model';
 
 @Injectable({ providedIn: 'root' })
 export class NotesService {
   private readonly storageKey = 'notety.notes';
   private readonly categories = inject(CategoriesService);
 
-  readonly notes = signal<NoteList>(this.loadFromStorageOrSeed());
+  readonly notes = signal<NoteList>(this.seed());
 
-  private loadFromStorageOrSeed(): NoteList {
+  // Attempts to load notes from localStorage; returns null when unavailable or on parse failure
+  private loadFromStorage(): NoteList | null {
     try {
       const raw = localStorage.getItem(this.storageKey);
       if (!raw) {
-        return [];
+        return null;
       }
       const parsed = JSON.parse(raw) as Array<
         Omit<Note, 'createdAt' | 'updatedAt' | 'categoryId'> & {
@@ -32,8 +33,14 @@ export class NotesService {
         updatedAt: n.updatedAt ? new Date(n.updatedAt) : undefined,
       }));
     } catch {
-      return [];
+      return null;
     }
+  }
+
+  // Seeds initial state using storage contents when present; otherwise returns an empty list
+  private seed(): NoteList {
+    const fromStorage = this.loadFromStorage();
+    return fromStorage ?? [];
   }
 
   private saveToStorage(list: NoteList): void {
@@ -64,6 +71,12 @@ export class NotesService {
   }
 
   public add(note: Note): void {
+    // Ensure we operate on the latest snapshot from localStorage
+    const latest = this.loadFromStorage();
+    if (latest) {
+      this.notes.set(latest);
+    }
+
     const updatedList = [note, ...this.notes()];
     this.notes.set(updatedList);
     this.saveToStorage(updatedList);
@@ -82,6 +95,12 @@ export class NotesService {
     id: string,
     changes: Partial<Omit<Note, 'id' | 'createdAt'>>
   ): void {
+    // Ensure we operate on the latest snapshot from localStorage
+    const latest = this.loadFromStorage();
+    if (latest) {
+      this.notes.set(latest);
+    }
+
     const updatedList = this.notes().map((n) =>
       n.id === id
         ? {
