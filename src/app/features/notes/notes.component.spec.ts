@@ -1,13 +1,18 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NotesComponent } from './notes.component';
-import { Router, ActivatedRoute, convertToParamMap } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
 import { signal } from '@angular/core';
-import { NotesService } from './notes.service';
-import { SearchService } from '../../shared/services/search.service';
-import { CategoriesService } from '../../shared/services/categories.service';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ActivatedRoute,
+  convertToParamMap,
+  provideRouter,
+  Router,
+} from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
+import { CategoriesService } from '../../shared/services/categories.service';
+import { SearchService } from '../../shared/services/search.service';
 import { Note } from '../models/note.model';
+import { NotesComponent } from './notes.component';
+import { NotesService } from './notes.service';
 
 describe('NotesComponent closeDialog', () => {
   let fixture: ComponentFixture<NotesComponent>;
@@ -347,5 +352,165 @@ describe('NotesComponent filteredNotes computed', () => {
     cats.selectedId.set('cat-2');
     search.debouncedTerm.set('alpha');
     expect(component.filteredNotes().map((n) => n.id)).toEqual(['b2']);
+  });
+});
+
+describe('NotesComponent restoreNotes', () => {
+  const makeRouteStub = () => ({
+    queryParamMap: of(convertToParamMap({})),
+    snapshot: { queryParamMap: convertToParamMap({}) },
+  });
+
+  let originalFileReader: typeof FileReader;
+  type NotesSvcStub = {
+    notes: ReturnType<typeof signal<Note[]>>;
+    findById: jest.Mock;
+    removeAt: jest.Mock;
+    replaceAll: jest.Mock;
+  };
+  type CategoriesSvcStub = {
+    selectedId: ReturnType<typeof signal<string | null>>;
+    getName: jest.Mock;
+    replaceAll: jest.Mock;
+  };
+  let notesSvcStub: NotesSvcStub;
+  let categoriesSvcStub: CategoriesSvcStub;
+
+  beforeEach(() => {
+    originalFileReader = globalThis.FileReader;
+    // fresh stubs per test
+    notesSvcStub = {
+      notes: signal([]),
+      findById: jest.fn(),
+      removeAt: jest.fn(),
+      replaceAll: jest.fn(),
+    };
+    categoriesSvcStub = {
+      selectedId: signal<string | null>(null),
+      getName: jest.fn(),
+      replaceAll: jest.fn(),
+    };
+  });
+
+  afterEach(() => {
+    // restore FileReader
+    globalThis.FileReader = originalFileReader;
+    jest.useRealTimers();
+  });
+
+  function mockFileReaderWithResult(result: string | ArrayBuffer) {
+    const mock = {
+      onload: null as FileReader['onload'],
+      result: result as FileReader['result'],
+      readAsText: jest.fn((_blob: Blob) => {
+        // Immediately invoke onload with preset result
+        if (typeof mock.onload === 'function') {
+          mock.onload({} as ProgressEvent<FileReader>);
+        }
+      }),
+    } as unknown as FileReader;
+
+    // Provide a constructor-like function for FileReader
+    const FakeFileReader = function () {
+      return mock;
+    } as unknown as typeof FileReader;
+    globalThis.FileReader = FakeFileReader;
+    return mock;
+  }
+
+  async function configureAndCreate() {
+    await TestBed.configureTestingModule({
+      imports: [NotesComponent],
+      providers: [
+        {
+          provide: NotesService,
+          useValue: notesSvcStub as unknown as NotesService,
+        },
+        { provide: SearchService, useValue: { debouncedTerm: signal('') } },
+        {
+          provide: CategoriesService,
+          useValue: categoriesSvcStub as unknown as CategoriesService,
+        },
+        { provide: ActivatedRoute, useValue: makeRouteStub() },
+        provideRouter([]),
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(NotesComponent);
+    const component = fixture.componentInstance;
+    fixture.detectChanges();
+    return { fixture, component };
+  }
+
+  it('restores notes and categories from valid backup and shows success', async () => {
+    const { component } = await configureAndCreate();
+
+    const backupJson = JSON.stringify({
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      categories: [{ id: 'cat-1', Name: 'Work' }],
+      notes: [
+        {
+          id: 'n1',
+          title: 'T',
+          content: 'C',
+          categoryId: 'cat-1',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ],
+    });
+
+    mockFileReaderWithResult(backupJson);
+
+    const fakeInput = {
+      files: [new Blob([backupJson], { type: 'application/json' })],
+      value: 'dummy',
+    } as unknown as HTMLInputElement;
+
+    component.restoreNotes(fakeInput);
+
+    expect(notesSvcStub.replaceAll).toHaveBeenCalledTimes(1);
+    expect(notesSvcStub.replaceAll).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'n1', title: 'T', content: 'C' }),
+      ])
+    );
+    expect(categoriesSvcStub.replaceAll).toHaveBeenCalledTimes(1);
+    expect(categoriesSvcStub.replaceAll).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ id: 'cat-1' })])
+    );
+
+    expect(component.successAlertMessage()).toBe('Restore completed.');
+    expect(fakeInput.value).toBe('');
+  });
+
+  it('shows error and does not replace when backup format is invalid', async () => {
+    jest.useFakeTimers();
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    const { component } = await configureAndCreate();
+
+    const invalidBackup = JSON.stringify({ version: 1, exportedAt: 'x' });
+    mockFileReaderWithResult(invalidBackup);
+
+    const fakeInput = {
+      files: [new Blob([invalidBackup], { type: 'application/json' })],
+      value: 'dummy',
+    } as unknown as HTMLInputElement;
+
+    component.restoreNotes(fakeInput);
+
+    expect(notesSvcStub.replaceAll).not.toHaveBeenCalled();
+    expect(categoriesSvcStub.replaceAll).not.toHaveBeenCalled();
+    expect(component.alertMessage()).toBe('Failed to restore.');
+
+    // It schedules auto-hide after 4s
+    jest.advanceTimersByTime(4000);
+    expect(component.alertMessage()).toBeNull();
+    expect(fakeInput.value).toBe('');
+
+    consoleErrorSpy.mockRestore();
   });
 });

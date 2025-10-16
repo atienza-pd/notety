@@ -7,17 +7,17 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
-import { NotesService } from './notes.service';
-import { Note, NoteList } from '../models/note.model';
-import { NoteDetailsComponent } from './note-details.component';
-import { SensitiveWarningBannerComponent } from '../../shared/sensitive-warning/sensitive-warning-banner.component';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { SearchService } from '../../shared/services/search.service';
-import { CategoriesService } from '../../shared/services/categories.service';
-import { LinkifyPipe } from '../../shared/pipe/linkify/linkify-pipe';
-import { PillsComponent } from '../../shared/pills/pills.component';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ConfirmationDialogComponent } from '../../shared/confirmation-dialog/confirmation-dialog.component';
+import { PillsComponent } from '../../shared/pills/pills.component';
+import { LinkifyPipe } from '../../shared/pipe/linkify/linkify-pipe';
+import { SensitiveWarningBannerComponent } from '../../shared/sensitive-warning/sensitive-warning-banner.component';
+import { CategoriesService } from '../../shared/services/categories.service';
+import { SearchService } from '../../shared/services/search.service';
+import { Note } from '../models/note.model';
+import { NoteDetailsComponent } from './note-details.component';
+import { NotesService } from './notes.service';
 
 @Component({
   selector: 'app-notes',
@@ -136,9 +136,24 @@ export class NotesComponent implements OnDestroy {
     const file = input.files?.[0];
     if (!file) return;
     const reader = new FileReader();
+
     reader.onload = () => {
       try {
-        const parsed = JSON.parse(String(reader.result));
+        const res = reader.result;
+        if (res == null) {
+          throw new Error('Failed to read file contents.');
+        }
+        let text: string;
+        if (typeof res === 'string') {
+          text = res;
+        } else if (res instanceof ArrayBuffer) {
+          // Guard against accidental ArrayBuffer results; decode as UTF-8
+          text = new TextDecoder('utf-8').decode(new Uint8Array(res));
+        } else {
+          // As a last resort, use Blob/text
+          throw new Error('Unsupported file content type.');
+        }
+        const parsed = JSON.parse(text);
         if (!parsed || !Array.isArray(parsed.notes)) {
           throw new Error('Invalid backup format');
         }
@@ -149,7 +164,7 @@ export class NotesComponent implements OnDestroy {
       } catch (e) {
         console.error(e);
         this.alertMessage.set('Failed to restore.');
-        this.autoHideSuccessAlert();
+        this.autoHideAlert();
       } finally {
         input.value = '';
       }
