@@ -85,6 +85,10 @@ export class NotesComponent implements OnDestroy {
     show: false,
     noteIndex: null as number | null,
   });
+  readonly restoreDialog = signal({
+    show: false,
+    input: null as HTMLInputElement | null,
+  });
 
   // floating action button state
   readonly fabOpen = signal(false);
@@ -132,7 +136,34 @@ export class NotesComponent implements OnDestroy {
     }
   }
 
-  restoreNotes(input: HTMLInputElement): void {
+  public onRestoreFileSelected(input: HTMLInputElement): void {
+    const file = input.files?.[0];
+    if (!file) return;
+    // Open confirmation dialog; keep a reference to the input to use on confirm
+    this.restoreDialog.set({ show: true, input });
+  }
+
+  public closeRestoreDialog(): void {
+    const current = this.restoreDialog();
+    if (current.input) {
+      // Clear the file selection when canceling/closing
+      current.input.value = '';
+    }
+    this.restoreDialog.set({ show: false, input: null });
+  }
+
+  public confirmRestore(): void {
+    const current = this.restoreDialog();
+    if (!current.input) {
+      this.restoreDialog.set({ show: false, input: null });
+      return;
+    }
+    // Hide dialog before performing restore
+    this.restoreDialog.set({ show: false, input: null });
+    this.restoreNotes(current.input);
+  }
+
+  public restoreNotes(input: HTMLInputElement): void {
     const file = input.files?.[0];
     if (!file) return;
     const reader = new FileReader();

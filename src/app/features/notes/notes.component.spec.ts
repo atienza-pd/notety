@@ -513,4 +513,104 @@ describe('NotesComponent restoreNotes', () => {
 
     consoleErrorSpy.mockRestore();
   });
+
+  it('opens restore confirmation dialog on file selection and proceeds on confirm', async () => {
+    const { fixture, component } = await configureAndCreate();
+
+    const backupJson = JSON.stringify({
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      categories: [{ id: 'cat-1', Name: 'Work' }],
+      notes: [
+        {
+          id: 'n1',
+          title: 'T',
+          content: 'C',
+          categoryId: 'cat-1',
+          createdAt: new Date().toISOString(),
+        },
+      ],
+    });
+    mockFileReaderWithResult(backupJson);
+
+    const fakeInput = {
+      files: [new Blob([backupJson], { type: 'application/json' })],
+      value: 'dummy',
+    } as unknown as HTMLInputElement;
+
+    // Simulate file selection action
+    component.onRestoreFileSelected(fakeInput);
+    fixture.detectChanges();
+
+    expect(component.restoreDialog().show).toBe(true);
+
+    // Find restore confirmation dialog and click confirm
+    const dialogEl: HTMLElement | null = fixture.nativeElement.querySelector(
+      'app-confirmation-dialog'
+    );
+    expect(dialogEl).toBeTruthy();
+    const buttons = Array.from(dialogEl!.querySelectorAll('button'));
+    const confirmBtn = buttons.find((b) =>
+      /restore/i.test(b.textContent || '')
+    );
+    expect(confirmBtn).toBeTruthy();
+    confirmBtn!.click();
+    fixture.detectChanges();
+
+    // Should have called replaceAll via restoreNotes
+    expect(notesSvcStub.replaceAll).toHaveBeenCalled();
+    expect(categoriesSvcStub.replaceAll).toHaveBeenCalled();
+  });
+
+  it('cancels restore: dialog closes and input is cleared, no replace called', async () => {
+    const { fixture, component } = await configureAndCreate();
+
+    const backupJson = JSON.stringify({
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      categories: [],
+      notes: [],
+    });
+    mockFileReaderWithResult(backupJson);
+
+    // Create an input-like object we can observe value on
+    const fakeInput = {
+      files: [new Blob([backupJson], { type: 'application/json' })],
+      value: 'dummy',
+    } as unknown as HTMLInputElement;
+
+    component.onRestoreFileSelected(fakeInput);
+    fixture.detectChanges();
+    expect(component.restoreDialog().show).toBe(true);
+
+    // Click cancel on confirmation dialog
+    const dialogEl: HTMLElement | null = fixture.nativeElement.querySelector(
+      'app-confirmation-dialog'
+    );
+    expect(dialogEl).toBeTruthy();
+    const buttons = Array.from(dialogEl!.querySelectorAll('button'));
+    const cancelBtn = buttons.find((b) => /cancel/i.test(b.textContent || ''));
+    expect(cancelBtn).toBeTruthy();
+    cancelBtn!.click();
+    fixture.detectChanges();
+
+    expect(component.restoreDialog().show).toBe(false);
+    // Input should be cleared
+    expect(fakeInput.value).toBe('');
+    // No replace calls should have happened
+    expect(notesSvcStub.replaceAll).not.toHaveBeenCalled();
+    expect(categoriesSvcStub.replaceAll).not.toHaveBeenCalled();
+  });
+
+  it('does not open restore dialog when no file is selected', async () => {
+    const { component } = await configureAndCreate();
+
+    const fakeInput = {
+      files: [],
+      value: '',
+    } as unknown as HTMLInputElement;
+
+    component.onRestoreFileSelected(fakeInput);
+    expect(component.restoreDialog().show).toBe(false);
+  });
 });
