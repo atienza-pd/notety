@@ -92,7 +92,7 @@
         accept="application/json"
         class="hidden"
         #restoreFile
-        (change)="restoreNotes(restoreFile)"
+        (change)="onRestoreFileSelected(restoreFile)"
       />
     </label>
     }
@@ -135,6 +135,19 @@
     (confirm)="confirmDelete(deleteDialog().noteIndex)"
     (cancel)="closeDeleteDialog()"
     (close)="closeDeleteDialog()"
+  />
+  }
+
+  <!-- Restore Confirmation Dialog -->
+  @if(restoreDialog().show){
+  <app-confirmation-dialog
+    [title]="`Restore from Backup`"
+    message="Restoring will overwrite your current notes and categories with the contents of the selected backup. This action cannot be undone. Proceed?"
+    confirmButtonText="Restore"
+    cancelButtonText="Cancel"
+    (confirm)="confirmRestore()"
+    (cancel)="closeRestoreDialog()"
+    (close)="closeRestoreDialog()"
   />
   }
 
