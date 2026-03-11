@@ -1,5 +1,29 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
   <div>
+    <label
+      for="category"
+      class="block text-sm font-medium leading-6 text-gray-900"
+      >Category<span class="text-red-500">*</span></label
+    >
+    <select
+      id="category"
+      formControlName="categoryId"
+      class="mt-2 block w-full appearance-none rounded-md border-0 bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAUCAMAAACtdX32AAAAdVBMVEUAAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAhMdQaAAAAJ3RSTlMAAAECAwQGBwsOFBwkJTg5RUZ4eYCHkJefpaytrsXGy8zW3+Do8vNn0bsyAAAAYElEQVR42tXROwJDQAAA0Ymw1p9kiT+L5P5HVEi3qJn2lcPjtIuzUIJ/rhIGy762N3XaThqMN1ZPALsZPEzG1x8LrFL77DHBnEMxBewz0fJ6LyFHTPL7xhwzWYrJ9z22AqmQBV757MHfAAAAAElFTkSuQmCC')] bg-[position:100%] bg-no-repeat p-3 py-1.5 text-gray-900 ring-1 ring-gray-300 ring-inset focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm sm:leading-6"
+      [attr.aria-invalid]="
+        form.controls.categoryId.touched && form.controls.categoryId.invalid
+          ? true
+          : null
+      "
+    >
+      @for (cat of categoriesSvc.categories(); track cat.id) {
+      <option [value]="cat.id">{{ cat.Name }}</option>
+      }
+    </select>
+    @if (form.controls.categoryId.touched && form.controls.categoryId.invalid) {
+    <p class="mt-1 text-xs text-red-600">Category is required.</p>
+    }
+  </div>
+  <div>
     <label for="title" class="block text-sm font-medium leading-6 text-gray-900"
       >Title (optional)</label
     >
@@ -22,6 +46,9 @@
       rows="8"
       formControlName="content"
       placeholder="Write your note..."
+      [attr.maxlength]="maxChars"
+      (keydown.enter)="onEnterKey($event)"
+      (input)="onContentInput()"
       [attr.aria-invalid]="
         form.controls.content.touched && form.controls.content.invalid
           ? true
@@ -32,12 +59,29 @@
         form.controls.content.touched && form.controls.content.invalid
       "
     ></textarea>
-    <p
-      *ngIf="form.controls.content.touched && form.controls.content.invalid"
-      class="mt-2 text-sm text-red-600"
-    >
-      Content is required.
-    </p>
+    <div class="mt-1 flex items-center justify-between text-xs">
+      <div class="text-red-600">
+        @if (form.controls.content.touched && form.controls.content.invalid) {
+        @if (form.controls.content.errors; as e) { @if (e['required']) { Content
+        is required. } @if (e['maxlength']) { Max {{ maxChars }} characters
+        only. } @if (e['maxNewLines']) { Max {{ maxNewlines }} new lines only. }
+        } }
+      </div>
+      <div class="flex items-center justify-end gap-3 text-gray-500">
+        <span
+          title="Characters (used/max)"
+          aria-label="Characters used out of maximum"
+          [class.text-red-600]="charCount > maxChars"
+          >{{ charCount }}/{{ maxChars }}</span
+        >
+        <span
+          title="New lines (used/max)"
+          aria-label="New lines used out of maximum"
+          [class.text-red-600]="newlineCount > maxNewlines"
+          >{{ newlineCount }}/{{ maxNewlines }}</span
+        >
+      </div>
+    </div>
   </div>
   <div class="flex items-center justify-end gap-2">
     <button

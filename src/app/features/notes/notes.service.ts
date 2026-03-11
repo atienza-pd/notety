@@ -1,39 +1,46 @@
-import { Injectable, effect, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { CategoriesService } from '../../shared/services/categories.service';
 import { Note, NoteList } from '../models/note.model';
 
 @Injectable({ providedIn: 'root' })
 export class NotesService {
   private readonly storageKey = 'notety.notes';
+  private readonly categories = inject(CategoriesService);
 
-  readonly notes = signal<NoteList>(this.loadFromStorageOrSeed());
+  readonly notes = signal<NoteList>(this.seed());
 
-  // No injector needed: service is providedIn 'root' (app-lifetime); effect cleans up its debounce timer
-  private readonly persistEffect = effect((onCleanup) => {
-    const current = this.notes();
-    const handle = setTimeout(() => this.saveToStorage(current), 150);
-    onCleanup(() => clearTimeout(handle));
-  });
-
-  private loadFromStorageOrSeed(): NoteList {
+  // Attempts to load notes from localStorage; returns null when unavailable or on parse failure
+  private loadFromStorage(): NoteList | null {
     try {
       const raw = localStorage.getItem(this.storageKey);
       if (!raw) {
-        return [];
+        return null;
       }
       const parsed = JSON.parse(raw) as Array<
-        Omit<Note, 'createdAt' | 'updatedAt'> & {
+        Omit<Note, 'createdAt' | 'updatedAt' | 'categoryId'> & {
           createdAt: string;
           updatedAt?: string;
+          categoryId?: string;
         }
       >;
+      const personalId = this.ensurePersonalCategoryId();
       return parsed.map((n) => ({
-        ...n,
+        id: n.id,
+        title: n.title,
+        content: n.content,
+        categoryId: n.categoryId ?? personalId,
         createdAt: new Date(n.createdAt),
         updatedAt: n.updatedAt ? new Date(n.updatedAt) : undefined,
       }));
     } catch {
-      return [];
+      return null;
     }
+  }
+
+  // Seeds initial state using storage contents when present; otherwise returns an empty list
+  private seed(): NoteList {
+    const fromStorage = this.loadFromStorage();
+    return fromStorage ?? [];
   }
 
   private saveToStorage(list: NoteList): void {
@@ -50,29 +57,102 @@ export class NotesService {
     }
   }
 
-  add(note: Note): void {
-    this.notes.update((list) => [note, ...list]);
+  private ensurePersonalCategoryId(): string {
+    const cats = this.categories.categories();
+    const personal = cats.find((c) => c.Name.toLowerCase() === 'personal');
+    if (personal) return personal.id;
+    // Fallbacks: first category or create 'Personal'
+    if (cats.length > 0) return cats[0].id;
+    this.categories.addCategory('Personal');
+    const created = this.categories
+      .categories()
+      .find((c) => c.Name.toLowerCase() === 'personal');
+    return created ? created.id : '';
+  }
+
+  public add(note: Note): void {
+    // Ensure we operate on the latest snapshot from localStorage
+    const latest = this.loadFromStorage();
+    if (latest) {
+      this.notes.set(latest);
+    }
+
+    const updatedList = [note, ...this.notes()];
+    this.notes.set(updatedList);
+    this.saveToStorage(updatedList);
   }
 
   removeAt(index: number): void {
     this.notes.update((list) => list.filter((_, i) => i !== index));
+    this.saveToStorage(this.notes());
   }
 
   findById(id: string): Note | undefined {
     return this.notes().find((n) => n.id === id);
   }
 
-  update(id: string, changes: Partial<Omit<Note, 'id' | 'createdAt'>>): void {
-    this.notes.update((list) =>
-      list.map((n) =>
-        n.id === id
-          ? {
-              ...n,
-              ...changes,
-              updatedAt: new Date(),
-            }
-          : n
-      )
+  public update(
+    id: string,
+    changes: Partial<Omit<Note, 'id' | 'createdAt'>>
+  ): void {
+    // Ensure we operate on the latest snapshot from localStorage
+    const latest = this.loadFromStorage();
+    if (latest) {
+      this.notes.set(latest);
+    }
+
+    const updatedList = this.notes().map((n) =>
+      n.id === id
+        ? {
+            ...n,
+            ...changes,
+            updatedAt: new Date(),
+          }
+        : n
     );
+
+    this.notes.set(updatedList);
+
+    this.saveToStorage(updatedList);
+  }
+
+  /**
+   * Replace all notes with a new list (used by restore operation).
+   * Input dates may be strings; they are normalized to Date instances.
+   */
+  replaceAll(
+    list:
+      | NoteList
+      | Array<
+          Omit<Note, 'createdAt' | 'updatedAt'> & {
+            createdAt: string | Date;
+            updatedAt?: string | Date;
+          }
+        >
+  ): void {
+    try {
+      type Incoming =
+        | Note
+        | (Omit<Note, 'createdAt' | 'updatedAt'> & {
+            createdAt: string | Date;
+            updatedAt?: string | Date;
+          });
+      const normalized: NoteList = (list as Incoming[]).map((n) => ({
+        id: n.id,
+        title: (n as Note).title ?? undefined,
+        content: (n as Note).content,
+        categoryId: (n as Note).categoryId,
+        createdAt:
+          n.createdAt instanceof Date ? n.createdAt : new Date(n.createdAt),
+        updatedAt: n.updatedAt
+          ? n.updatedAt instanceof Date
+            ? n.updatedAt
+            : new Date(n.updatedAt)
+          : undefined,
+      }));
+      this.notes.set(normalized);
+    } catch (err) {
+      console.error('Failed to replace notes from backup:', err);
+    }
   }
 }

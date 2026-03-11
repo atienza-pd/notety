@@ -1,0 +1,80 @@
+<!-- Backdrop -->
+<div class="fixed inset-0 bg-black/40 z-40" (click)="onClose()"></div>
+
+<!-- Modal -->
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  aria-labelledby="category-modal-title"
+>
+  <div class="w-full max-w-sm rounded-lg bg-white shadow-lg relative">
+    <!-- Header -->
+    <div
+      class="px-4 py-3 border-b border-gray-200 flex items-center justify-between"
+    >
+      <h2
+        id="category-modal-title"
+        class="text-base font-semibold text-gray-900"
+      >
+        {{ title() }}
+      </h2>
+      <button
+        type="button"
+        class="inline-flex items-center justify-center rounded-md p-1 text-gray-500 hover:text-gray-700"
+        aria-label="Close"
+        (click)="onClose()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          class="w-5 h-5"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M4.293 4.293a1 1 0 0 1 1.414 0L10 8.586l4.293-4.293a1 1 0 1 1 1.414 1.414L11.414 10l4.293 4.293a1 1 0 0 1-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 0 1-1.414-1.414L8.586 10 4.293 5.707a1 1 0 0 1 0-1.414Z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <form class="px-4 py-4" (ngSubmit)="onSubmit()" [formGroup]="form">
+      <label for="categoryName" class="block text-sm font-medium text-gray-700"
+        >Category</label
+      >
+      <div class="mt-1 relative">
+        <input
+          id="categoryName"
+          type="text"
+          class="block w-full rounded-md border border-gray-300 py-2 px-3 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 pr-14"
+          formControlName="name"
+          [attr.maxLength]="maxLen"
+          placeholder="Enter category name"
+          required
+        />
+        <span
+          class="absolute inset-y-0 right-2 flex items-center text-xs text-gray-500"
+        >
+          {{ count }}/{{ maxLen }}
+        </span>
+      </div>
+      @if (nameCtrl.touched && nameCtrl.invalid) {
+      <p class="mt-1 text-xs text-red-600">
+        @if (nameCtrl.errors?.['required']) { Category is required. } @else if
+        (nameCtrl.errors?.['maxlength']) { Max 20 characters. }
+      </p>
+      }
+
+      <div class="mt-4 flex justify-end">
+        <button
+          type="submit"
+          class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50"
+          [disabled]="form.invalid"
+        >
+          Save
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
